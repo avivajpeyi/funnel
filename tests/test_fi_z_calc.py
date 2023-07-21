@@ -88,8 +88,8 @@ def test_fi_integration_plot(bilby_objects):
     # fig.suptitle("FI Evidence @ True Injection", y=1.1)
     # fig.tight_layout()
     # fig.savefig(f"{result.outdir}/fi_evidence_at_true_inj.png")
-    n_samp = 10
-    fig = plot_fi_evidence_results(result, priors, likelihood, result.posterior.sample(10).to_dict('records'))
+    n_samp = 100
+    fig = plot_fi_evidence_results(result, priors, likelihood, result.posterior.sample(n_samp).to_dict('records'))
     fig.suptitle(f"FI Evidence @ {n_samp} Posterior Samples", y= 1.1)
     fig.tight_layout()
     fig.savefig(f"{result.outdir}/fi_evidence_{n_samp}_posterior_samples_.png")

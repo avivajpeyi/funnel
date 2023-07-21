@@ -7,3 +7,7 @@
 /docs/_build/
 /src/*.egg-info/
 __pycache__/
+out
+*.png
+.idea
+.ipynb_checkpoints

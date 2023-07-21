@@ -9,8 +9,6 @@ homepage = "https://github.com/avivajpeyi/funnel"
 repository = "https://github.com/avivajpeyi/funnel"
 documentation = "https://funnel.readthedocs.io"
 classifiers = [
-    "Programming Language :: Python :: 3.6",
-    "Programming Language :: Python :: 3.7",
     "Programming Language :: Python :: 3.8",
 ]
 
@@ -18,8 +16,10 @@ classifiers = [
 Changelog = "https://github.com/avivajpeyi/funnel/releases"
 
 [tool.poetry.dependencies]
-python = "^3.6.1"
+python = "^3.8.0"
 click = "^7.0"
+bilby = "^2.1.1"
+jupyter = "^1.0.0"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.4.3"

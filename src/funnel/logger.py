@@ -9,7 +9,7 @@ logger.add(
     sys.stderr,
     format="|<blue>funnel</blue>|{level}| <green>{message}</green> ",
     colorize=True,
-    level="DEBUG",
+    level="INFO",
 )
 
 warnings.filterwarnings("ignore", category=RuntimeWarning)

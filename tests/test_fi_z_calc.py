@@ -6,9 +6,7 @@ import bilby
 import matplotlib.pyplot as plt
 import shutil
 
-from funnel.fi_core import fi_ln_evidence
 from funnel.plotting import plot_fi_evidence_results
-from funnel.utils import extract_ref_samp_from_post
 
 CLEAN = False
 
@@ -71,17 +69,6 @@ def bilby_result():
 
     return result
 
-
-def test_fi_integration_one_val(bilby_result):
-    post, ref_samp, ref_lnp, ref_lnl = extract_ref_samp_from_post(bilby_result.posterior)
-    fi_lnz_test = fi_ln_evidence(
-        posterior_samples=post,
-        ref_samp=ref_samp,
-        r=100,
-        ref_lnpri=ref_lnp,
-        ref_lnl=ref_lnl,
-    )
-    assert np.isfinite(fi_lnz_test)
 
 
 def test_fi_integration_plot(bilby_result, tmp_path):

@@ -1,4 +1,4 @@
-FoUrier iNtEgRation Evidence cAlcuLation (Funnel)
+Funnel (FoUrier iNtegratioN Evidence calcuLation)
 =================================================
 
 |PyPI| |Python Version|

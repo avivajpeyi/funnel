@@ -1,8 +1,8 @@
 import numpy as np
 import pandas as pd
-from .utils import extract_ref_samp_from_post
-from tqdm.auto import tqdm
+from .utils import get_post_mask
 from .logger import logger
+from tqdm.auto import trange
 import os
 
 
@@ -54,24 +54,43 @@ def get_fi_lnz_list(
         data = np.load(cache_fn)
         return data['lnzs'], data['r_vals']
 
-    logger.info(f"Calculating FI LnZ using a posterior sample of size: {posterior_samples.shape}")
-
     if len(r_vals) == 0:
         r_vals = np.geomspace(1e-3, 1e10, 2000)
 
     if num_ref_params > len(posterior_samples):
         num_ref_params = len(posterior_samples)
 
+    # unpacking posterior data
+    ln_pri = posterior_samples['log_prior'].values
+    ln_lnl = posterior_samples['log_likelihood'].values
+    post = posterior_samples[posterior_samples.columns.drop(["log_prior", "log_likelihood"])].values
+
+    logger.info(f"Calculating FI LnZ with {num_ref_params} reference points "
+                f"and a posterior of size: {post.shape}")
+
+    # randomly select reference points
+    ref_idx = np.random.choice(len(post), num_ref_params, replace=False)
+
     lnzs = np.zeros((num_ref_params, len(r_vals)))
-    for i in tqdm(range(num_ref_params), desc="FI LnZ"):
-        post, ref_samp, ref_lnp, ref_lnl = extract_ref_samp_from_post(posterior_samples)
-        fi_kwargs = dict(
-            posterior_samples=post,
-            ref_samp=ref_samp,
-            ref_lnpri=ref_lnp,
-            ref_lnl=ref_lnl,
-        )
-        lnzs[i] = np.array([fi_ln_evidence(**fi_kwargs, r=ri) for ri in r_vals])
+    median_lnzs = np.zeros(num_ref_params)
+    med_ = 0
+
+    with trange(num_ref_params, desc="FI LnZ", postfix=f"FI LnZ: {med_}") as pbar:
+        for i in pbar:
+            refi = ref_idx[i]
+            med_ = np.nanmedian(median_lnzs[:i]) if i > 0 else 0
+
+            post_mask = get_post_mask(post, refi)
+            fi_kwargs = dict(
+                posterior_samples=post[post_mask],
+                ref_samp=post[refi],
+                ref_lnpri=ln_pri[refi],
+                ref_lnl=ln_lnl[refi],
+            )
+            lnzs[i] = np.array([fi_ln_evidence(**fi_kwargs, r=ri) for ri in r_vals])
+            median_lnzs[i] = np.nanmedian(lnzs[i])
+            pbar.set_postfix_str(f"FI LnZ: {med_:.2f}")
+            pbar.update()
 
     if cache_fn:
         np.savez(cache_fn, lnzs=lnzs, r_vals=r_vals)

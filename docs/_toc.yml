@@ -1,5 +1,4 @@
 format: jb-book
 root: index
 chapters:
-- file: examples/linear_regression
-- file: reference
+- file: examples/*.ipynb

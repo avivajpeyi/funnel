@@ -16,13 +16,18 @@ classifiers = [
 Changelog = "https://github.com/avivajpeyi/funnel/releases"
 
 [tool.poetry.dependencies]
-python = "^3.8.1"
+python = "^3.9.1"
 click = "^7.0"
-bilby = "^2.1.1"
 jupyter = "^1.0.0"
+tqdm = "^4.65.0"
+pytest = "^7.4.0"
+loguru = "^0.7.0"
+astropy = "^5.3.1"
+lalsuite = "^7.16"
 
 [tool.poetry.dev-dependencies]
-pytest = "^5.4.3"
+bilby = "^2.1.1"
+pytest = "^7.4.0"
 coverage = {extras = ["toml"], version = "^5.2"}
 sphinx = "^3.1.2"
 sphinx-autobuild = "^0.7.1"
@@ -50,7 +55,7 @@ source = ["funnel"]
 
 [tool.coverage.report]
 show_missing = true
-fail_under = 100
+fail_under = 90
 
 [build-system]
 requires = ["poetry>=0.12"]

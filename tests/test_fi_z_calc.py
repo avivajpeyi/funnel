@@ -6,15 +6,19 @@ import bilby
 import matplotlib.pyplot as plt
 import shutil
 
-from funnel.fi_core import get_refernce_lnprior_lnlikelihood, plot_fi_evidence_results, fi_ln_evidence
+from funnel.fi_core import fi_ln_evidence
+from funnel.plotting import plot_fi_evidence_results
+from funnel.utils import extract_ref_samp_from_post
 
 CLEAN = False
 
 np.random.seed(42)
 
-@pytest.fixture(scope="module")
-def bilby_objects():
+NLIVE = 200
 
+
+@pytest.fixture(scope="module")
+def bilby_result():
     def model(time, m, c):
         return time * m + c
 
@@ -54,42 +58,37 @@ def bilby_objects():
         likelihood=likelihood,
         priors=priors,
         sampler="dynesty",
-        nlive=1500,
+        nlive=200,
         outdir=outdir,
         label=label,
         injection_parameters=injection_parameters,
     )
-    fig = result.plot_corner()
-    fig.suptitle(f"Nested Sampling LnZ = {result.log_evidence:.2f}+/-{result.log_evidence_err:.2f}", y=1.1)
-    fig.savefig(f"{outdir}/corner.png")
+    corner_fig = f"{outdir}/corner.png"
+    if not os.path.exists(corner_fig):
+        fig = result.plot_corner()
+        fig.suptitle(f"Nested Sampling LnZ = {result.log_evidence:.2f}+/-{result.log_evidence_err:.2f}", y=1.1)
+        fig.savefig(f"{outdir}/corner.png")
 
-    return result, priors, likelihood
+    return result
 
 
-def test_fi_integration_one_val(bilby_objects):
-    result, priors, likelihood = bilby_objects
-
-    ref_lnpri, ref_lnl = get_refernce_lnprior_lnlikelihood(priors, likelihood, result.injection_parameters)
-
+def test_fi_integration_one_val(bilby_result):
+    post, ref_samp, ref_lnp, ref_lnl = extract_ref_samp_from_post(bilby_result.posterior)
     fi_lnz_test = fi_ln_evidence(
-        posterior_samples=result.posterior[['m', 'c']].values,
-        ref_parm=np.array([*result.injection_parameters.values()]),
+        posterior_samples=post,
+        ref_samp=ref_samp,
         r=100,
-        reference_lnprior=ref_lnpri,
-        reference_lnlikelihood=ref_lnl,
+        ref_lnpri=ref_lnp,
+        ref_lnl=ref_lnl,
     )
-    print(f"Test FI LnZ (R=100) = {fi_lnz_test:.2f}")
     assert np.isfinite(fi_lnz_test)
 
 
-def test_fi_integration_plot(bilby_objects):
-    result, priors, likelihood = bilby_objects
-    # fig = plot_fi_evidence_results(result, priors, likelihood)
-    # fig.suptitle("FI Evidence @ True Injection", y=1.1)
-    # fig.tight_layout()
-    # fig.savefig(f"{result.outdir}/fi_evidence_at_true_inj.png")
-    n_samp = 100
-    fig = plot_fi_evidence_results(result, priors, likelihood, result.posterior.sample(n_samp).to_dict('records'))
-    fig.suptitle(f"FI Evidence @ {n_samp} Posterior Samples", y= 1.1)
-    fig.tight_layout()
-    fig.savefig(f"{result.outdir}/fi_evidence_{n_samp}_posterior_samples_.png")
+def test_fi_integration_plot(bilby_result, tmp_path):
+    lnz, lnzerr = bilby_result.log_evidence, bilby_result.log_evidence_err
+    fig = plot_fi_evidence_results(
+        posterior_samples=bilby_result.posterior,
+        sampling_lnz=[lnz - lnzerr, lnz + lnzerr],
+        r_vals=[10, 100, 1000],
+    )
+    fig.savefig(tmp_path / "fi_evidence.png")

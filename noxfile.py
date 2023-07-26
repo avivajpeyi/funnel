@@ -113,7 +113,6 @@ def install(session: Session, *args: str) -> None:
         session.install(f"--constraint={requirements}", *args)
 
 
-
 def activate_virtualenv_in_precommit_hooks(session: Session) -> None:
     """Activate virtualenv in hooks installed by pre-commit.
 

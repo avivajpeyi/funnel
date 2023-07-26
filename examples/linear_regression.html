@@ -378,12 +378,6 @@ document.write(`
 </pre></div>
 </div>
 </div>
-<div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>The autoreload extension is already loaded. To reload it, use:
-  %reload_ext autoreload
-</pre></div>
-</div>
-</div>
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
@@ -396,7 +390,7 @@ document.write(`
 <span class="kn">from</span> <span class="nn">funnel.plotting</span> <span class="kn">import</span> <span class="n">plot_fi_evidence_results</span>
 <span class="kn">from</span> <span class="nn">funnel.fi_core</span> <span class="kn">import</span> <span class="n">get_fi_lnz_list</span>
 
-<span class="n">CLEAN</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="n">CLEAN</span> <span class="o">=</span> <span class="kc">False</span>
 <span class="n">OUTDIR</span> <span class="o">=</span> <span class="s1">&#39;out_line&#39;</span>
 
 <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">OUTDIR</span><span class="p">)</span> <span class="ow">and</span> <span class="n">CLEAN</span><span class="p">:</span>
@@ -485,14 +479,14 @@ document.write(`
     <span class="p">)</span>
 <span class="n">lnz</span><span class="p">,</span> <span class="n">lnz_err</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">log_evidence</span><span class="p">,</span> <span class="n">result</span><span class="o">.</span><span class="n">log_evidence_err</span>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;LnZ: </span><span class="si">{</span><span class="n">lnz</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">+/-</span><span class="si">{</span><span class="n">lnz_err</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;lnBF: </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">log_bayes_factor</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;lnBF: </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">log_bayes_factor</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 <span class="n">result</span><span class="o">.</span><span class="n">posterior</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<script type="application/vnd.jupyter.widget-view+json">{"version_major": 2, "version_minor": 0, "model_id": "f4d2fdffb0df45a0b967aace4231a02a"}</script><div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>LnZ: -143.80+/-0.08
-lnBF: 462.81213009525925
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>LnZ: -143.80+/-0.08
+lnBF: 462.81
 </pre></div>
 </div>
 <div class="output text_html"><div>
@@ -598,7 +592,7 @@ lnBF: 462.81213009525925
 </div>
 </div>
 <div class="cell_output docutils container">
-<script type="application/vnd.jupyter.widget-view+json">{"version_major": 2, "version_minor": 0, "model_id": "5afd6827db624524887c8fa0d323d9e1"}</script><div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>LnZ: -143.65+/-0.08
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>LnZ: -143.65+/-0.08
 lnBF: nan
 </pre></div>
 </div>
@@ -689,11 +683,6 @@ lnBF: nan
 </pre></div>
 </div>
 </div>
-<div class="cell_output docutils container">
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>|<span class=" -Color -Color-Blue">funnel</span>|INFO| <span class=" -Color -Color-Green">Calculating FI LnZ with 100 reference points and a posterior of size: (4114, 2)</span> 
-</pre></div>
-</div>
-<script type="application/vnd.jupyter.widget-view+json">{"version_major": 2, "version_minor": 0, "model_id": "69a7bff45e3f44bd87990c19b8fa3752"}</script></div>
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
@@ -705,18 +694,32 @@ lnBF: nan
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../_images/198aae3c0adc9fc1c90bc87dde4ccf86ae8bb6452985c45a62b7dfc623eba13f.png" src="../_images/198aae3c0adc9fc1c90bc87dde4ccf86ae8bb6452985c45a62b7dfc623eba13f.png" />
+<img alt="../_images/4f914ff431de40703bcce56b28e84093c73c708230365dab482a10357048fe36.png" src="../_images/4f914ff431de40703bcce56b28e84093c73c708230365dab482a10357048fe36.png" />
 </div>
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fig</span> <span class="o">=</span> <span class="n">plot_fi_evidence_results</span><span class="p">(</span><span class="o">**</span><span class="n">plt_kwgs</span><span class="p">,</span> <span class="n">plot_inividual_lnzs</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fig</span> <span class="o">=</span> <span class="n">plot_fi_evidence_results</span><span class="p">(</span><span class="o">**</span><span class="n">plt_kwgs</span><span class="p">,</span> <span class="n">plot_all_lnzs</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="n">fig</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../_images/78a8b95cb29c13c49061003ed6d077d512266bee5b8e3922e916dcb2aebf8e9d.png" src="../_images/78a8b95cb29c13c49061003ed6d077d512266bee5b8e3922e916dcb2aebf8e9d.png" />
+<img alt="../_images/4efdaad6c4bb1a1b2657be8aa14d591b8e0f088c1d38caa972b73ab93236ec28.png" src="../_images/4efdaad6c4bb1a1b2657be8aa14d591b8e0f088c1d38caa972b73ab93236ec28.png" />
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fig</span> <span class="o">=</span> <span class="n">plot_fi_evidence_results</span><span class="p">(</span><span class="o">**</span><span class="n">plt_kwgs</span><span class="p">,</span> <span class="n">plot_all_lnzs</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">ax</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mf">1e3</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">(</span><span class="o">-</span><span class="mi">147</span><span class="p">,</span> <span class="o">-</span><span class="mi">137</span><span class="p">)</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../_images/705e456a26bb7e3724f9a05a6451c2e86bcdaaf462c52f941d9c2b4c2688588e.png" src="../_images/705e456a26bb7e3724f9a05a6451c2e86bcdaaf462c52f941d9c2b4c2688588e.png" />
 </div>
 </div>
 </section>

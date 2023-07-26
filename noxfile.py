@@ -108,10 +108,10 @@ def install(session: Session, *args: str) -> None:
         session: The Session object.
         args: Command-line arguments for ``pip install``.
     """
-    # poetry = Poetry(session)
-    # with poetry.export("--dev") as requirements:
-    #     session.install(f"--constraint={requirements}", *args)
-    session.install(*args)
+    poetry = Poetry(session)
+    with poetry.export("--dev") as requirements:
+        session.install(f"--constraint={requirements}", *args)
+
 
 
 def activate_virtualenv_in_precommit_hooks(session: Session) -> None:

@@ -15,3 +15,5 @@ out*
 *.json
 *.hdf5
 *.DS_Store
+*.coverage.*
+.idea

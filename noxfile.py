@@ -13,8 +13,10 @@ from nox.sessions import Session
 
 
 package = "funnel"
-python_versions = ["3.8", "3.7", "3.6"]
-nox.options.sessions = "pre-commit", "safety", "mypy", "tests", "typeguard"
+MAIN_PY = "3.11"
+python_versions = [MAIN_PY]
+# nox.options.sessions = "pre-commit", "safety", "mypy", "tests", "typeguard"
+nox.options.sessions = "pre-commit", "tests"
 
 
 class Poetry:
@@ -106,9 +108,10 @@ def install(session: Session, *args: str) -> None:
         session: The Session object.
         args: Command-line arguments for ``pip install``.
     """
-    poetry = Poetry(session)
-    with poetry.export("--dev") as requirements:
-        session.install(f"--constraint={requirements}", *args)
+    # poetry = Poetry(session)
+    # with poetry.export("--dev") as requirements:
+    #     session.install(f"--constraint={requirements}", *args)
+    session.install(*args)
 
 
 def activate_virtualenv_in_precommit_hooks(session: Session) -> None:
@@ -248,7 +251,7 @@ def xdoctest(session: Session) -> None:
     session.run("python", "-m", "xdoctest", package, *args)
 
 
-@nox.session(python="3.8")
+@nox.session(python=MAIN_PY)
 def docs(session: Session) -> None:
     """Build the documentation."""
     args = session.posargs or ["docs", "docs/_build"]
@@ -261,9 +264,9 @@ def docs(session: Session) -> None:
         shutil.rmtree(builddir)
 
     install_package(session)
-    install(session, "sphinx", "sphinx-autobuild")
+    install(session, "jupyter-book")
 
     if session.interactive:
-        session.run("sphinx-autobuild", *args)
+        session.run("jupyter-book", *args)
     else:
-        session.run("sphinx-build", *args)
+        session.run("jupyter-book", *args)

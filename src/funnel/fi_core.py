@@ -1,12 +1,17 @@
-import numpy as np
-import pandas as pd
-from .utils import get_post_mask
-from .logger import logger
-from tqdm.auto import trange
+"""Core functions for Fourier Integration evidence approximation."""
 import os
 
+import numpy as np
+import pandas as pd
+from tqdm.auto import trange
 
-def fi_ln_posterior(posterior_samples: np.ndarray, reference_sample: np.array, r: float):
+from .logger import logger
+from .utils import get_post_mask
+
+
+def fi_ln_posterior(
+    posterior_samples: np.ndarray, reference_sample: np.array, r: float
+):
     """
     Returns the approx posterior probability at the reference parameter value.
     The approximation is based on the 'density estimation' method described in
@@ -29,7 +34,13 @@ def fi_ln_posterior(posterior_samples: np.ndarray, reference_sample: np.array, r
     return np.log(sum_res * const)
 
 
-def fi_ln_evidence(posterior_samples: np.ndarray, ref_samp: np.array, r: float, ref_lnpri: float, ref_lnl: float):
+def fi_ln_evidence(
+    posterior_samples: np.ndarray,
+    ref_samp: np.array,
+    r: float,
+    ref_lnpri: float,
+    ref_lnl: float,
+):
     """
     Returns the approx log-evidence of some posterior samples (using a reference parameter value).
     The approximation is based on the 'density estimation' method described in
@@ -47,12 +58,15 @@ def fi_ln_evidence(posterior_samples: np.ndarray, ref_samp: np.array, r: float, 
 
 
 def get_fi_lnz_list(
-        posterior_samples: pd.DataFrame, r_vals: np.array = [], num_ref_params: int = 10,
-        cache_fn=""
+    posterior_samples: pd.DataFrame,
+    r_vals: np.array = [],
+    num_ref_params: int = 10,
+    weight_samples_by_lnl: bool = False,
+    cache_fn="",
 ):
     if os.path.exists(cache_fn):
         data = np.load(cache_fn)
-        return data['lnzs'], data['r_vals']
+        return data["lnzs"], data["r_vals"]
 
     if len(r_vals) == 0:
         r_vals = np.geomspace(1e-3, 1e10, 2000)
@@ -61,15 +75,23 @@ def get_fi_lnz_list(
         num_ref_params = len(posterior_samples)
 
     # unpacking posterior data
-    ln_pri = posterior_samples['log_prior'].values
-    ln_lnl = posterior_samples['log_likelihood'].values
-    post = posterior_samples[posterior_samples.columns.drop(["log_prior", "log_likelihood"])].values
+    ln_pri = posterior_samples["log_prior"].values
+    ln_lnl = posterior_samples["log_likelihood"].values
+    post = posterior_samples[
+        posterior_samples.columns.drop(["log_prior", "log_likelihood"])
+    ].values
 
-    logger.info(f"Calculating FI LnZ with {num_ref_params} reference points "
-                f"and a posterior of size: {post.shape}")
+    logger.info(
+        f"Calculating FI LnZ with {num_ref_params} reference points "
+        f"and a posterior of size: {post.shape}"
+    )
 
     # randomly select reference points
     ref_idx = np.random.choice(len(post), num_ref_params, replace=False)
+    if weight_samples_by_lnl:
+        p = np.exp(ln_lnl - np.nanmax(ln_lnl))
+        p /= np.nansum(p)
+        ref_idx = np.random.choice(len(post), num_ref_params, replace=False, p=p)
 
     lnzs = np.zeros((num_ref_params, len(r_vals)))
     median_lnzs = np.zeros(num_ref_params)

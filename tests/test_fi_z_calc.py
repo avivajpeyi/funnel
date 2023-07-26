@@ -1,10 +1,11 @@
+"""All tests for the funnel package."""
 import os
+import shutil
 
-import pytest
-import numpy as np
 import bilby
 import matplotlib.pyplot as plt
-import shutil
+import numpy as np
+import pytest
 
 from funnel.plotting import plot_fi_evidence_results
 
@@ -17,10 +18,12 @@ NLIVE = 200
 
 @pytest.fixture(scope="module")
 def bilby_result():
+    """Create a bilby result object with a Gaussian likelihood."""
+
     def model(time, m, c):
         return time * m + c
 
-    outdir, label = 'out', 'line'
+    outdir, label = "out", "line"
     if os.path.exists(outdir) and CLEAN:
         shutil.rmtree(outdir)
     os.makedirs(outdir, exist_ok=True)
@@ -31,16 +34,18 @@ def bilby_result():
     sampling_frequency = 10
     time_duration = 10
     time = np.arange(0, time_duration, 1 / sampling_frequency)
-    N = len(time)
-    sigma = np.random.normal(1, 0.01, N)
-    data = model(time, **injection_parameters) + np.random.normal(0, sigma, N)
+    n = len(time)
+    sigma = np.random.normal(1, 0.01, n)
+    data = model(time, **injection_parameters) + np.random.normal(0, sigma, n)
 
     likelihood = bilby.likelihood.GaussianLikelihood(time, data, model, sigma)
 
-    priors = bilby.core.prior.PriorDict(dict(
-        m=bilby.core.prior.Uniform(0, 5, "m"),
-        c=bilby.core.prior.Uniform(-2, 2, "c")
-    ))
+    priors = bilby.core.prior.PriorDict(
+        dict(
+            m=bilby.core.prior.Uniform(0, 5, "m"),
+            c=bilby.core.prior.Uniform(-2, 2, "c"),
+        )
+    )
 
     # We quickly plot the data to check it looks sensible
     if not os.path.exists(outdir):
@@ -64,14 +69,18 @@ def bilby_result():
     corner_fig = f"{outdir}/corner.png"
     if not os.path.exists(corner_fig):
         fig = result.plot_corner()
-        fig.suptitle(f"Nested Sampling LnZ = {result.log_evidence:.2f}+/-{result.log_evidence_err:.2f}", y=1.1)
+        fig.suptitle(
+            "Nested Sampling LnZ = "
+            f"{result.log_evidence:.2f}+/-{result.log_evidence_err:.2f}",
+            y=1.1,
+        )
         fig.savefig(f"{outdir}/corner.png")
 
     return result
 
 
-
 def test_fi_integration_plot(bilby_result, tmp_path):
+    """Test the fi_integration_plot function."""
     lnz, lnzerr = bilby_result.log_evidence, bilby_result.log_evidence_err
     fig = plot_fi_evidence_results(
         posterior_samples=bilby_result.posterior,

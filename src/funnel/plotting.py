@@ -1,29 +1,33 @@
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from .fi_core import get_fi_lnz_list
-
-import matplotlib.pyplot as plt
 from matplotlib import rcParams
 
-rcParams.update({'xtick.major.pad': '7.0'})
-rcParams.update({'xtick.major.size': '7.5'})
-rcParams.update({'xtick.major.width': '1.5'})
-rcParams.update({'xtick.minor.pad': '7.0'})
-rcParams.update({'xtick.minor.size': '3.5'})
-rcParams.update({'xtick.minor.width': '1.0'})
-rcParams.update({'ytick.major.pad': '7.0'})
-rcParams.update({'ytick.major.size': '7.5'})
-rcParams.update({'ytick.major.width': '1.5'})
-rcParams.update({'ytick.minor.pad': '7.0'})
-rcParams.update({'ytick.minor.size': '3.5'})
-rcParams.update({'ytick.minor.width': '1.0'})
-rcParams.update({'font.size': 20})
+from .fi_core import get_fi_lnz_list
+
+rcParams.update({"xtick.major.pad": "7.0"})
+rcParams.update({"xtick.major.size": "7.5"})
+rcParams.update({"xtick.major.width": "1.5"})
+rcParams.update({"xtick.minor.pad": "7.0"})
+rcParams.update({"xtick.minor.size": "3.5"})
+rcParams.update({"xtick.minor.width": "1.0"})
+rcParams.update({"ytick.major.pad": "7.0"})
+rcParams.update({"ytick.major.size": "7.5"})
+rcParams.update({"ytick.major.width": "1.5"})
+rcParams.update({"ytick.minor.pad": "7.0"})
+rcParams.update({"ytick.minor.size": "3.5"})
+rcParams.update({"ytick.minor.width": "1.0"})
+rcParams.update({"font.size": 20})
 
 
 def plot_fi_evidence_results(
-        posterior_samples: pd.DataFrame = pd.DataFrame, sampling_lnz: np.array = [], r_vals: np.array = np.array([]),
-        num_ref_params: int = 10, plot_all_lnzs: bool = False, plt_kwgs: dict = {},
-        lnzs=np.array([]),
+    posterior_samples: pd.DataFrame = pd.DataFrame,
+    sampling_lnz: np.array = [],
+    r_vals: np.array = np.array([]),
+    num_ref_params: int = 10,
+    plot_all_lnzs: bool = False,
+    plt_kwgs: dict = {},
+    lnzs=np.array([]),
 ):
     if len(lnzs) == 0:
         lnzs, r_vals = get_fi_lnz_list(posterior_samples, r_vals, num_ref_params)
@@ -34,31 +38,43 @@ def plot_fi_evidence_results(
 
     if len(sampling_lnz) > 0:
         ax.fill_between(
-            x=r_vals, y1=min(sampling_lnz), y2=max(sampling_lnz),
-            color='tab:blue', interpolate=True, alpha=.5, label="Nested Sampling",
-            zorder=10
+            x=r_vals,
+            y1=min(sampling_lnz),
+            y2=max(sampling_lnz),
+            color="tab:blue",
+            interpolate=True,
+            alpha=0.5,
+            label="Nested Sampling",
+            zorder=10,
         )
     ax.set_xlim(min(r_vals), max(r_vals))
     ax.set_xlabel(r"FI $R$")
     ax.set_ylabel(r"$\ln{\mathcal{Z}}$")
-    ax.set_xscale('log')
+    ax.set_xscale("log")
 
-    fi_color = 'tab:green'
+    fi_color = "tab:green"
     if plot_all_lnzs:
-        plt_kwgs['alpha'] = plt_kwgs.get('alpha', .05)
+        plt_kwgs["alpha"] = plt_kwgs.get("alpha", 0.05)
         for lnz in lnzs:
             ax.plot(r_vals, lnz, zorder=-1, **plt_kwgs, color=fi_color)
     else:
         ax.fill_between(
-            x=r_vals, y1=lnz_quants[2], y2=lnz_quants[0],
-            color=fi_color, interpolate=True, alpha=.25, zorder=0, lw=0, label=r"90% CI"
+            x=r_vals,
+            y1=lnz_quants[2],
+            y2=lnz_quants[0],
+            color=fi_color,
+            interpolate=True,
+            alpha=0.25,
+            zorder=0,
+            lw=0,
+            label=r"90% CI",
         )
         ax.plot(r_vals, lnz_quants[1], zorder=1, alpha=1, color=fi_color)
     ax.plot([], [], label="FI", color=fi_color, alpha=1, zorder=1)
 
     # median along all 2d lnzs
     med = np.nanmedian(np.nanmedian(lnzs, axis=1), axis=0)
-    ax.axhline(med, label="FI Median", color=fi_color, alpha=0.5, zorder=1, ls='--')
+    ax.axhline(med, label="FI Median", color=fi_color, alpha=0.5, zorder=1, ls="--")
 
     ax.legend(loc=(1.1, 0.5), frameon=False)
     plt.tight_layout()

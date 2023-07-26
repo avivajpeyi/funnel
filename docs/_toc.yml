@@ -1,6 +1,6 @@
 format: jb-book
 root: index
 chapters:
-- file: examples/linear_regression
-- file: examples/lvk_injection
-- file: examples/lvk
+  - file: examples/linear_regression
+  - file: examples/lvk_injection
+  - file: examples/lvk

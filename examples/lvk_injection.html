@@ -353,8 +353,19 @@ document.write(`
             </div>
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#nested-sampling-lnz-calculation">Nested sampling LnZ Calculation</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#compute-fi-evidence">Compute FI evidence</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#simple-2-parameter-inferece">Simple 2-parameter inferece</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#nested-sampling-lnz-calculation">Nested sampling LnZ Calculation</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#compute-fi-evidence">Compute FI evidence</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#d-parameter-inference">15-D parameter inference</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#compute-fi-lnz">Compute FI LnZ</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#using-a-downsampled-posterior-sample-for-speed">Using a downsampled posterior sample for speed</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#using-the-full-posterior-sample-but-a-few-refernce-points">Using the full posterior sample but a few refernce points</a></li>
+</ul>
+</li>
+</ul>
+</li>
 </ul>
             </nav>
         </div>
@@ -389,6 +400,7 @@ document.write(`
 <div class="highlight-ipython2 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">bilby</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">os</span><span class="o">,</span> <span class="nn">shutil</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">namedtuple</span>
 <span class="kn">import</span> <span class="nn">logging</span>
 <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
 <span class="kn">from</span> <span class="nn">funnel.plotting</span> <span class="kn">import</span> <span class="n">plot_fi_evidence_results</span>
@@ -406,8 +418,10 @@ document.write(`
 </div>
 </div>
 </div>
+<section id="simple-2-parameter-inferece">
+<h2>Simple 2-parameter inferece<a class="headerlink" href="#simple-2-parameter-inferece" title="Permalink to this heading">#</a></h2>
 <section id="nested-sampling-lnz-calculation">
-<h2>Nested sampling LnZ Calculation<a class="headerlink" href="#nested-sampling-lnz-calculation" title="Permalink to this heading">#</a></h2>
+<h3>Nested sampling LnZ Calculation<a class="headerlink" href="#nested-sampling-lnz-calculation" title="Permalink to this heading">#</a></h3>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython2 notranslate"><div class="highlight"><pre><span></span><span class="n">bilby_logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s2">&quot;bilby&quot;</span><span class="p">)</span>
@@ -563,7 +577,7 @@ LnL- Noise LnL: 90.09
 <p>NOTE: the LVK stores the log-likelihood - noise log-likelihood in the column labeled ‘log-likelihood’</p>
 </section>
 <section id="compute-fi-evidence">
-<h2>Compute FI evidence<a class="headerlink" href="#compute-fi-evidence" title="Permalink to this heading">#</a></h2>
+<h3>Compute FI evidence<a class="headerlink" href="#compute-fi-evidence" title="Permalink to this heading">#</a></h3>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython2 notranslate"><div class="highlight"><pre><span></span><span class="n">lnz_file</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">OUTDIR</span><span class="si">}</span><span class="s2">/lnz.npz&quot;</span>
@@ -602,6 +616,324 @@ LnL- Noise LnL: 90.09
 <img alt="../_images/9a212da89c99b5d382730c918a48ce203360cce1d34ea4e4370ddaa6003776a1.png" src="../_images/9a212da89c99b5d382730c918a48ce203360cce1d34ea4e4370ddaa6003776a1.png" />
 </div>
 </div>
+</section>
+</section>
+<section id="d-parameter-inference">
+<h2>15-D parameter inference<a class="headerlink" href="#d-parameter-inference" title="Permalink to this heading">#</a></h2>
+<p>We download a pre-run LVK injection.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython2 notranslate"><div class="highlight"><pre><span></span><span class="c1"># load the LVK posterior</span>
+<span class="n">FPATH</span> <span class="o">=</span> <span class="s1">&#39;128_cpus_v1_0_result.hdf5&#39;</span>
+
+
+<span class="kn">import</span> <span class="nn">bilby</span>
+
+<span class="c1"># r = bilby.gw.result.CBCResult.from_hdf5(FPATH)</span>
+<span class="c1"># r.posterior</span>
+<span class="c1"># print(r.search_parameter_keys)</span>
+<span class="n">LVK_data</span> <span class="o">=</span> <span class="n">namedtuple</span><span class="p">(</span><span class="s2">&quot;LVK_data&quot;</span><span class="p">,</span> <span class="s2">&quot;posterior, lnz, lnz_err, lnBF&quot;</span><span class="p">)</span>
+<span class="c1"># #</span>
+<span class="c1">#</span>
+<span class="k">def</span> <span class="nf">load_lvk_data</span><span class="p">(</span><span class="n">fpath</span><span class="p">):</span>
+    <span class="n">r</span> <span class="o">=</span> <span class="n">bilby</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">result</span><span class="o">.</span><span class="n">CBCResult</span><span class="o">.</span><span class="n">from_hdf5</span><span class="p">(</span><span class="n">FPATH</span><span class="p">)</span>
+    <span class="n">post</span> <span class="o">=</span> <span class="n">r</span><span class="o">.</span><span class="n">posterior</span>
+    <span class="n">sampling_params</span> <span class="o">=</span><span class="n">r</span><span class="o">.</span><span class="n">search_parameter_keys</span> <span class="o">+</span> <span class="p">[</span><span class="s1">&#39;log_likelihood&#39;</span><span class="p">,</span> <span class="s1">&#39;log_prior&#39;</span><span class="p">,</span> <span class="s1">&#39;luminosity_distance&#39;</span><span class="p">]</span>
+    <span class="n">lnz</span><span class="p">,</span> <span class="n">lnz_err</span> <span class="o">=</span>  <span class="n">r</span><span class="o">.</span><span class="n">log_evidence</span><span class="p">,</span> <span class="n">r</span><span class="o">.</span><span class="n">log_evidence_err</span>
+    <span class="n">lnBF</span> <span class="o">=</span> <span class="n">r</span><span class="o">.</span><span class="n">log_bayes_factor</span>
+    <span class="n">post</span> <span class="o">=</span> <span class="n">post</span><span class="p">[</span><span class="n">sampling_params</span><span class="p">]</span>
+    <span class="n">post</span> <span class="o">=</span> <span class="n">post</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="n">post</span><span class="o">.</span><span class="n">nunique</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">LVK_data</span><span class="p">(</span><span class="n">post</span><span class="p">,</span> <span class="n">lnz</span><span class="p">,</span> <span class="n">lnz_err</span><span class="p">,</span> <span class="n">lnBF</span><span class="p">)</span>
+
+
+<span class="n">CBC_data</span> <span class="o">=</span> <span class="n">load_lvk_data</span><span class="p">(</span><span class="n">FPATH</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython2 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Posterior shape: </span><span class="si">{</span><span class="n">CBC_data</span><span class="o">.</span><span class="n">posterior</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;LnZ: </span><span class="si">{</span><span class="n">CBC_data</span><span class="o">.</span><span class="n">lnz</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> +/- </span><span class="si">{</span><span class="n">CBC_data</span><span class="o">.</span><span class="n">lnz_err</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;LnBF: </span><span class="si">{</span><span class="n">CBC_data</span><span class="o">.</span><span class="n">lnBF</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="n">CBC_data</span><span class="o">.</span><span class="n">posterior</span><span class="o">.</span><span class="n">head</span><span class="p">()</span><span class="o">.</span><span class="n">T</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Posterior shape: (15196, 17)
+LnZ: -16332.68 +/- 0.11
+LnBF: 56.96249503300896
+</pre></div>
+</div>
+<div class="output text_html"><div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>chirp_mass</th>
+      <th>mass_ratio</th>
+      <th>a_1</th>
+      <th>a_2</th>
+      <th>tilt_1</th>
+      <th>tilt_2</th>
+      <th>phi_12</th>
+      <th>phi_jl</th>
+      <th>cos_theta_jn</th>
+      <th>psi</th>
+      <th>phase</th>
+      <th>azimuth</th>
+      <th>zenith</th>
+      <th>time_jitter</th>
+      <th>log_likelihood</th>
+      <th>log_prior</th>
+      <th>luminosity_distance</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>17.303518</td>
+      <td>0.640732</td>
+      <td>0.122786</td>
+      <td>0.294212</td>
+      <td>2.671935</td>
+      <td>0.617993</td>
+      <td>5.277061</td>
+      <td>5.421349</td>
+      <td>0.649265</td>
+      <td>3.033949</td>
+      <td>3.838546</td>
+      <td>3.105585</td>
+      <td>0.552605</td>
+      <td>-0.000104</td>
+      <td>59.964813</td>
+      <td>-7.725553</td>
+      <td>835.104547</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>17.137896</td>
+      <td>0.363822</td>
+      <td>0.126647</td>
+      <td>0.671431</td>
+      <td>1.089454</td>
+      <td>1.095211</td>
+      <td>5.083531</td>
+      <td>0.331844</td>
+      <td>-0.750138</td>
+      <td>1.530611</td>
+      <td>4.858204</td>
+      <td>2.906103</td>
+      <td>0.251147</td>
+      <td>0.000073</td>
+      <td>63.408287</td>
+      <td>-6.777387</td>
+      <td>644.254930</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>17.406246</td>
+      <td>0.475442</td>
+      <td>0.208230</td>
+      <td>0.858286</td>
+      <td>0.899129</td>
+      <td>1.673787</td>
+      <td>0.924704</td>
+      <td>3.584094</td>
+      <td>-0.906039</td>
+      <td>2.617934</td>
+      <td>0.359604</td>
+      <td>2.371659</td>
+      <td>0.141375</td>
+      <td>-0.000216</td>
+      <td>63.456029</td>
+      <td>-7.630868</td>
+      <td>1117.045547</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>17.221114</td>
+      <td>0.716670</td>
+      <td>0.124358</td>
+      <td>0.436716</td>
+      <td>2.487101</td>
+      <td>1.440678</td>
+      <td>4.632946</td>
+      <td>4.388201</td>
+      <td>-0.887552</td>
+      <td>1.037721</td>
+      <td>1.671526</td>
+      <td>2.250562</td>
+      <td>0.281922</td>
+      <td>0.000176</td>
+      <td>63.735976</td>
+      <td>-7.647782</td>
+      <td>1151.937210</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>17.224999</td>
+      <td>0.535031</td>
+      <td>0.064088</td>
+      <td>0.239654</td>
+      <td>1.332991</td>
+      <td>1.530625</td>
+      <td>5.622373</td>
+      <td>4.657011</td>
+      <td>-0.956641</td>
+      <td>3.061500</td>
+      <td>3.573420</td>
+      <td>1.480921</td>
+      <td>0.242988</td>
+      <td>0.000130</td>
+      <td>63.985682</td>
+      <td>-7.011267</td>
+      <td>1433.822042</td>
+    </tr>
+  </tbody>
+</table>
+</div></div></div>
+</div>
+<p>NOTE: the <code class="docutils literal notranslate"><span class="pre">log-likelihood</span></code> column is actually the <code class="docutils literal notranslate"><span class="pre">lnl-noise</span> <span class="pre">Lnl</span></code> (the <code class="docutils literal notranslate"><span class="pre">log-likelihood-ratio</span></code>).</p>
+<section id="compute-fi-lnz">
+<h3>Compute FI LnZ<a class="headerlink" href="#compute-fi-lnz" title="Permalink to this heading">#</a></h3>
+<section id="using-a-downsampled-posterior-sample-for-speed">
+<h4>Using a downsampled posterior sample for speed<a class="headerlink" href="#using-a-downsampled-posterior-sample-for-speed" title="Permalink to this heading">#</a></h4>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython2 notranslate"><div class="highlight"><pre><span></span><span class="n">OUTDIR</span> <span class="o">=</span> <span class="s1">&#39;out_inj_downsampled&#39;</span>
+<span class="n">CLEAN</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">OUTDIR</span><span class="p">)</span> <span class="ow">and</span> <span class="n">CLEAN</span><span class="p">:</span>
+    <span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="n">OUTDIR</span><span class="p">)</span>
+<span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">OUTDIR</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="c1"># USING DOWNSAMPLED POSTERIOR SAMPLES</span>
+<span class="n">N_SAMP</span> <span class="o">=</span> <span class="mi">10000</span>
+<span class="n">N_REF_POINTS</span> <span class="o">=</span> <span class="mi">100</span>
+<span class="n">post</span> <span class="o">=</span> <span class="n">CBC_data</span><span class="o">.</span><span class="n">posterior</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">N_SAMP</span><span class="p">,</span> <span class="n">weights</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">CBC_data</span><span class="o">.</span><span class="n">posterior</span><span class="o">.</span><span class="n">log_likelihood</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Using </span><span class="si">{</span><span class="mi">100</span><span class="o">*</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">post</span><span class="p">)</span><span class="o">/</span><span class="nb">len</span><span class="p">(</span><span class="n">CBC_data</span><span class="o">.</span><span class="n">posterior</span><span class="p">))</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">% of posterior samples, and trying out </span><span class="si">{</span><span class="n">N_REF_POINTS</span><span class="si">}</span><span class="s2"> reference points.&quot;</span><span class="p">)</span>
+<span class="n">lnzs</span><span class="p">,</span> <span class="n">r_vals</span> <span class="o">=</span> <span class="n">get_fi_lnz_list</span><span class="p">(</span>
+    <span class="n">post</span><span class="p">,</span>
+    <span class="n">num_ref_params</span><span class="o">=</span><span class="n">N_REF_POINTS</span><span class="p">,</span>
+    <span class="n">r_vals</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">geomspace</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mf">1e9</span><span class="p">,</span> <span class="mi">100</span><span class="p">),</span>
+    <span class="n">cache_fn</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">OUTDIR</span><span class="si">}</span><span class="s1">/lnzs.npz&#39;</span><span class="p">,</span>
+    <span class="n">weight_samples_by_lnl</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>|<span class=" -Color -Color-Blue">funnel</span>|INFO| <span class=" -Color -Color-Green">Calculating FI LnZ with 100 reference points and a posterior of size: (10000, 15)</span> 
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Using 65.81% of posterior samples, and trying out 100 reference points.
+</pre></div>
+</div>
+<script type="application/vnd.jupyter.widget-view+json">{"version_major": 2, "version_minor": 0, "model_id": "572865929ca242548441b501394eb2a3"}</script></div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython2 notranslate"><div class="highlight"><pre><span></span><span class="n">plt_kwgs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">lnzs</span><span class="o">=</span><span class="n">lnzs</span><span class="p">,</span> <span class="n">r_vals</span><span class="o">=</span><span class="n">r_vals</span><span class="p">,</span><span class="n">sampling_lnz</span><span class="o">=</span><span class="p">[</span><span class="n">CBC_data</span><span class="o">.</span><span class="n">lnBF</span><span class="p">])</span>
+<span class="n">fig</span> <span class="o">=</span> <span class="n">plot_fi_evidence_results</span><span class="p">(</span><span class="o">**</span><span class="n">plt_kwgs</span><span class="p">)</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;lnBF&quot;</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../_images/5706fb469074e634dad64f4da768c675997c23be3e2562039ca9ca1f04c2b62b.png" src="../_images/5706fb469074e634dad64f4da768c675997c23be3e2562039ca9ca1f04c2b62b.png" />
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython2 notranslate"><div class="highlight"><pre><span></span><span class="n">fig</span> <span class="o">=</span> <span class="n">plot_fi_evidence_results</span><span class="p">(</span><span class="o">**</span><span class="n">plt_kwgs</span><span class="p">,</span> <span class="n">plot_all_lnzs</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">plt_kwgs</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">alpha</span><span class="o">=</span><span class="mf">.1</span><span class="p">))</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;lnBF&quot;</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../_images/3f1e652d6cee6fbc14bebee425efb77dd93726bdac84f203789946932e3dc225.png" src="../_images/3f1e652d6cee6fbc14bebee425efb77dd93726bdac84f203789946932e3dc225.png" />
+</div>
+</div>
+</section>
+<section id="using-the-full-posterior-sample-but-a-few-refernce-points">
+<h4>Using the full posterior sample but a few refernce points<a class="headerlink" href="#using-the-full-posterior-sample-but-a-few-refernce-points" title="Permalink to this heading">#</a></h4>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython2 notranslate"><div class="highlight"><pre><span></span><span class="n">OUTDIR</span> <span class="o">=</span> <span class="s1">&#39;out_inj2&#39;</span>
+<span class="n">CLEAN</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">OUTDIR</span><span class="p">)</span> <span class="ow">and</span> <span class="n">CLEAN</span><span class="p">:</span>
+    <span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="n">OUTDIR</span><span class="p">)</span>
+<span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">OUTDIR</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="n">N_REF_POINTS</span> <span class="o">=</span> <span class="mi">100</span>
+<span class="n">post</span> <span class="o">=</span> <span class="n">CBC_data</span><span class="o">.</span><span class="n">posterior</span>
+<span class="n">lnzs</span><span class="p">,</span> <span class="n">r_vals</span> <span class="o">=</span> <span class="n">get_fi_lnz_list</span><span class="p">(</span>
+    <span class="n">post</span><span class="p">,</span>
+    <span class="n">num_ref_params</span><span class="o">=</span><span class="n">N_REF_POINTS</span><span class="p">,</span>
+    <span class="n">r_vals</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">geomspace</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mf">1e9</span><span class="p">,</span> <span class="mi">100</span><span class="p">),</span>
+    <span class="n">cache_fn</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">OUTDIR</span><span class="si">}</span><span class="s1">/lnzs.npz&#39;</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>|<span class=" -Color -Color-Blue">funnel</span>|INFO| <span class=" -Color -Color-Green">Calculating FI LnZ with 100 reference points and a posterior of size: (15196, 15)</span> 
+</pre></div>
+</div>
+<script type="application/vnd.jupyter.widget-view+json">{"version_major": 2, "version_minor": 0, "model_id": "134540d1be434dcbae4b648de7f70209"}</script></div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython2 notranslate"><div class="highlight"><pre><span></span><span class="n">plt_kwgs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">lnzs</span><span class="o">=</span><span class="n">lnzs</span><span class="p">,</span> <span class="n">r_vals</span><span class="o">=</span><span class="n">r_vals</span><span class="p">,</span><span class="n">sampling_lnz</span><span class="o">=</span><span class="p">[</span><span class="n">CBC_data</span><span class="o">.</span><span class="n">lnBF</span><span class="p">])</span>
+<span class="n">fig</span> <span class="o">=</span> <span class="n">plot_fi_evidence_results</span><span class="p">(</span><span class="o">**</span><span class="n">plt_kwgs</span><span class="p">)</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;lnBF&quot;</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../_images/15bea6ce913c5d7096194a53de92872a87b1b6c51db31417fde07281b9d9449c.png" src="../_images/15bea6ce913c5d7096194a53de92872a87b1b6c51db31417fde07281b9d9449c.png" />
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython2 notranslate"><div class="highlight"><pre><span></span><span class="n">fig</span> <span class="o">=</span> <span class="n">plot_fi_evidence_results</span><span class="p">(</span><span class="o">**</span><span class="n">plt_kwgs</span><span class="p">,</span> <span class="n">plot_all_lnzs</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">plt_kwgs</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">2</span><span class="p">))</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;lnBF&quot;</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../_images/46ac6a60fb7e8cea4c890aa3da8a80e5aa5922fbf713fbc92bb276f6d32a6c97.png" src="../_images/46ac6a60fb7e8cea4c890aa3da8a80e5aa5922fbf713fbc92bb276f6d32a6c97.png" />
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython2 notranslate"><div class="highlight"><pre><span></span><span class="c1"># numpy count of nans in lnzs</span>
+<span class="mi">100</span><span class="o">*</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">lnzs</span><span class="p">))</span><span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">lnzs</span><span class="o">.</span><span class="n">ravel</span><span class="p">()))</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>50.23
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+</section>
 </section>
 </section>
 
@@ -672,8 +1004,19 @@ LnL- Noise LnL: 90.09
   </div>
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#nested-sampling-lnz-calculation">Nested sampling LnZ Calculation</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#compute-fi-evidence">Compute FI evidence</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#simple-2-parameter-inferece">Simple 2-parameter inferece</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#nested-sampling-lnz-calculation">Nested sampling LnZ Calculation</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#compute-fi-evidence">Compute FI evidence</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#d-parameter-inference">15-D parameter inference</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#compute-fi-lnz">Compute FI LnZ</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#using-a-downsampled-posterior-sample-for-speed">Using a downsampled posterior sample for speed</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#using-the-full-posterior-sample-but-a-few-refernce-points">Using the full posterior sample but a few refernce points</a></li>
+</ul>
+</li>
+</ul>
+</li>
 </ul>
   </nav></div>
 

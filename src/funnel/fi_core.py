@@ -25,6 +25,11 @@ def fi_ln_posterior(
 
     diff_from_ref = posterior_samples - reference_sample
 
+    # patricio's suggestion
+    # different r for each parameter
+    # max_diff = np.nanmax(diff_from_ref, axis=0)
+    # r = np.pi/max_diff
+    # r is now a vector
     sin_diff = np.sin(r * diff_from_ref)
     sum_res = np.nansum(np.nanprod(sin_diff / diff_from_ref, axis=1))
     n_samp, n_dim = posterior_samples.shape
@@ -54,6 +59,30 @@ def fi_ln_evidence(
     :return: The log of the approximated log-evidence
     """
     approx_ln_post = fi_ln_posterior(posterior_samples, ref_samp, r)
+    return ref_lnpri + ref_lnl - approx_ln_post
+
+
+def get_fi_lnz_no_r(
+    posterior_samples: np.ndarray,
+    ref_samp: np.array,
+    ref_lnpri: float,
+    ref_lnl: float,
+):
+    diff_from_ref = posterior_samples - ref_samp
+
+    # patricio's suggestion
+    # different r for each parameter
+    max_diff = np.nanmax(diff_from_ref, axis=0)
+    r = np.pi / max_diff
+    # r is now a vector
+
+    sin_diff = np.sin(r * diff_from_ref)
+    sum_res = np.nansum(np.nanprod(sin_diff / diff_from_ref, axis=1))
+    n_samp, n_dim = posterior_samples.shape
+    const = 1 / (n_samp * np.power(np.pi, n_dim))
+    if sum_res < 0:
+        return np.nan
+    approx_ln_post = np.log(sum_res * const)
     return ref_lnpri + ref_lnl - approx_ln_post
 
 
@@ -97,6 +126,8 @@ def get_fi_lnz_list(
     median_lnzs = np.zeros(num_ref_params)
     med_ = 0
 
+    patricio_lnzs = np.zeros(num_ref_params)
+
     with trange(num_ref_params, desc="FI LnZ", postfix=f"FI LnZ: {med_}") as pbar:
         for i in pbar:
             refi = ref_idx[i]
@@ -111,6 +142,9 @@ def get_fi_lnz_list(
             )
             lnzs[i] = np.array([fi_ln_evidence(**fi_kwargs, r=ri) for ri in r_vals])
             median_lnzs[i] = np.nanmedian(lnzs[i])
+
+            patricio_lnzs[i] = get_fi_lnz_no_r(**fi_kwargs)
+
             pbar.set_postfix_str(f"FI LnZ: {med_:.2f}")
             pbar.update()
 

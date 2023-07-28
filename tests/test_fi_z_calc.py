@@ -8,6 +8,7 @@ import numpy as np
 import pytest
 
 from funnel.plotting import plot_fi_evidence_results
+from funnel.fi_core import get_fi_lnz_no_r
 
 CLEAN = False
 
@@ -82,6 +83,10 @@ def bilby_result():
 def test_fi_integration_plot(bilby_result, tmp_path):
     """Test the fi_integration_plot function."""
     lnz, lnzerr = bilby_result.log_evidence, bilby_result.log_evidence_err
+    # new_lnz = get_fi_lnz_no_r(
+    #     posterior_samples=bilby_result.posterior,
+    #     ref_samp=bilby_result.posterior.median(),
+    # )
     fig = plot_fi_evidence_results(
         posterior_samples=bilby_result.posterior,
         sampling_lnz=[lnz - lnzerr, lnz + lnzerr],

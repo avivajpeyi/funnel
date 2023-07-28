@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 from matplotlib import rcParams
 
-from .fi_core import get_fi_lnz_list
+from .fi_core import get_fi_lnz_list, get_fi_lnz_no_r
 
 rcParams.update({"xtick.major.pad": "7.0"})
 rcParams.update({"xtick.major.size": "7.5"})

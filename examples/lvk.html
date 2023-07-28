@@ -417,7 +417,7 @@ document.write(`
         <span class="n">lnBF</span> <span class="o">=</span> <span class="n">sampler_data</span><span class="p">[</span><span class="s1">&#39;ln_bayes_factor&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
         <span class="n">post</span> <span class="o">=</span> <span class="n">f</span><span class="p">[</span><span class="s1">&#39;C01:IMRPhenomXPHM&#39;</span><span class="p">][</span><span class="s1">&#39;posterior_samples&#39;</span><span class="p">][()]</span>
         <span class="n">post</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="n">name</span><span class="p">:</span> <span class="n">post</span><span class="p">[</span><span class="n">name</span><span class="p">][:]</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">post</span><span class="o">.</span><span class="n">dtype</span><span class="o">.</span><span class="n">names</span><span class="p">})</span>
-        <span class="n">post</span> <span class="o">=</span> <span class="n">post</span><span class="p">[</span><span class="n">sampling_params</span> <span class="o">+</span> <span class="p">[</span><span class="s1">&#39;log_likelihood&#39;</span><span class="p">,</span> <span class="s1">&#39;log_prior&#39;</span><span class="p">,</span> <span class="s1">&#39;luminosity_distance&#39;</span><span class="p">]]</span>
+        <span class="n">post</span> <span class="o">=</span> <span class="n">post</span><span class="p">[</span><span class="n">sampling_params</span> <span class="o">+</span> <span class="p">[</span><span class="s1">&#39;log_likelihood&#39;</span><span class="p">,</span> <span class="s1">&#39;log_prior&#39;</span><span class="p">]]</span>
         <span class="c1"># only keep parameters with more than one unique value (ie drop deltas)</span>
         <span class="n">post</span> <span class="o">=</span> <span class="n">post</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="n">post</span><span class="o">.</span><span class="n">nunique</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">]</span>
     <span class="k">return</span> <span class="n">LVK_data</span><span class="p">(</span><span class="n">post</span><span class="p">,</span> <span class="n">lnz</span><span class="p">,</span> <span class="n">lnz_err</span><span class="p">,</span> <span class="n">lnBF</span><span class="p">)</span>
@@ -430,35 +430,81 @@ document.write(`
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython2 notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">GW150914_data</span><span class="o">.</span><span class="n">posterior</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+<div class="highlight-ipython2 notranslate"><div class="highlight"><pre><span></span><span class="c1"># GW150914_data.posterior.columns WITHOUT log_likelihood and log_prior</span>
+<span class="n">sampling_params</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">GW150914_data</span><span class="o">.</span><span class="n">posterior</span><span class="o">.</span><span class="n">columns</span><span class="p">))</span><span class="o">-</span><span class="nb">set</span><span class="p">([</span><span class="s1">&#39;log_likelihood&#39;</span><span class="p">,</span> <span class="s1">&#39;log_prior&#39;</span><span class="p">])</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;CBC PARAMS:&quot;</span><span class="p">)</span>
+<span class="n">count</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">sampling_params</span><span class="p">):</span>
     <span class="k">if</span> <span class="s1">&#39;calib&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">i</span><span class="p">:</span>
-        <span class="nb">print</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+        <span class="n">count</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">count</span><span class="p">,</span> <span class="s2">&quot;)&quot;</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;CALIB PARAMS:&quot;</span><span class="p">)</span>
+<span class="n">count</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">sampling_params</span><span class="p">):</span>
+    <span class="k">if</span> <span class="s1">&#39;calib&#39;</span> <span class="ow">in</span> <span class="n">i</span><span class="p">:</span>
+        <span class="n">count</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">count</span><span class="p">,</span> <span class="s2">&quot;)&quot;</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>a_1
-a_2
-azimuth
-chirp_mass
-geocent_time
-luminosity_distance
-mass_1
-mass_2
-mass_ratio
-phase
-phi_12
-phi_jl
-psi
-theta_jn
-tilt_1
-tilt_2
-time_jitter
-zenith
-log_likelihood
-log_prior
-luminosity_distance
-geocent_time
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>CBC PARAMS:
+1 ) a_1
+2 ) a_2
+3 ) azimuth
+4 ) chirp_mass
+5 ) geocent_time
+6 ) luminosity_distance
+7 ) mass_ratio
+8 ) phase
+9 ) phi_12
+10 ) phi_jl
+11 ) psi
+12 ) theta_jn
+13 ) tilt_1
+14 ) tilt_2
+15 ) zenith
+CALIB PARAMS:
+1 ) recalib_H1_amplitude_0
+2 ) recalib_H1_amplitude_1
+3 ) recalib_H1_amplitude_2
+4 ) recalib_H1_amplitude_3
+5 ) recalib_H1_amplitude_4
+6 ) recalib_H1_amplitude_5
+7 ) recalib_H1_amplitude_6
+8 ) recalib_H1_amplitude_7
+9 ) recalib_H1_amplitude_8
+10 ) recalib_H1_amplitude_9
+11 ) recalib_H1_phase_0
+12 ) recalib_H1_phase_1
+13 ) recalib_H1_phase_2
+14 ) recalib_H1_phase_3
+15 ) recalib_H1_phase_4
+16 ) recalib_H1_phase_5
+17 ) recalib_H1_phase_6
+18 ) recalib_H1_phase_7
+19 ) recalib_H1_phase_8
+20 ) recalib_H1_phase_9
+21 ) recalib_L1_amplitude_0
+22 ) recalib_L1_amplitude_1
+23 ) recalib_L1_amplitude_2
+24 ) recalib_L1_amplitude_3
+25 ) recalib_L1_amplitude_4
+26 ) recalib_L1_amplitude_5
+27 ) recalib_L1_amplitude_6
+28 ) recalib_L1_amplitude_7
+29 ) recalib_L1_amplitude_8
+30 ) recalib_L1_amplitude_9
+31 ) recalib_L1_phase_0
+32 ) recalib_L1_phase_1
+33 ) recalib_L1_phase_2
+34 ) recalib_L1_phase_3
+35 ) recalib_L1_phase_4
+36 ) recalib_L1_phase_5
+37 ) recalib_L1_phase_6
+38 ) recalib_L1_phase_7
+39 ) recalib_L1_phase_8
+40 ) recalib_L1_phase_9
 </pre></div>
 </div>
 </div>
@@ -1094,13 +1140,13 @@ LnBF: 303.45
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>|<span class=" -Color -Color-Blue">funnel</span>|INFO| <span class=" -Color -Color-Green">Calculating FI LnZ with 100 reference points and a posterior of size: (10000, 58)</span> 
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>|<span class=" -Color -Color-Blue">funnel</span>|INFO| <span class=" -Color -Color-Green">Calculating FI LnZ with 100 reference points and a posterior of size: (10000, 55)</span> 
 </pre></div>
 </div>
 <div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Using 6.77% of posterior samples, and trying out 100 reference points.
 </pre></div>
 </div>
-<script type="application/vnd.jupyter.widget-view+json">{"version_major": 2, "version_minor": 0, "model_id": "88457927acd64d75b74aff0264808646"}</script></div>
+<script type="application/vnd.jupyter.widget-view+json">{"version_major": 2, "version_minor": 0, "model_id": "8622e1aaa0d7451c963a410522a213e7"}</script></div>
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
@@ -1111,19 +1157,7 @@ LnBF: 303.45
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../_images/8c72d56fd3c2a5a3ef41f353b0bc49adb5979ef5794c469ce83f5db7c149c4b8.png" src="../_images/8c72d56fd3c2a5a3ef41f353b0bc49adb5979ef5794c469ce83f5db7c149c4b8.png" />
-</div>
-</div>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython2 notranslate"><div class="highlight"><pre><span></span><span class="n">plt_kwgs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">lnzs</span><span class="o">=</span><span class="n">lnzs</span><span class="p">,</span> <span class="n">r_vals</span><span class="o">=</span><span class="n">r_vals</span><span class="p">,</span><span class="n">sampling_lnz</span><span class="o">=</span><span class="p">[</span><span class="n">GW150914_data</span><span class="o">.</span><span class="n">lnBF</span><span class="p">])</span>
-<span class="n">fig</span> <span class="o">=</span> <span class="n">plot_fi_evidence_results</span><span class="p">(</span><span class="o">**</span><span class="n">plt_kwgs</span><span class="p">)</span>
-<span class="n">fig</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;lnBF&quot;</span><span class="p">);</span>
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<img alt="../_images/3ca0ac3312f8f1bc62d811d9a7a25bc5ccb999c74fb2959c665c1d66c443f3f2.png" src="../_images/3ca0ac3312f8f1bc62d811d9a7a25bc5ccb999c74fb2959c665c1d66c443f3f2.png" />
+<img alt="../_images/6f2f7a4789dc2bcd08937426c859ba4af8398c60b3432739e8bbb80128a9278b.png" src="../_images/6f2f7a4789dc2bcd08937426c859ba4af8398c60b3432739e8bbb80128a9278b.png" />
 </div>
 </div>
 <div class="cell docutils container">
@@ -1134,7 +1168,7 @@ LnBF: 303.45
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../_images/b5b09bc6f5fb75c8a66d88072a5774c5c500993c4c132f3e9fbb3579b26cad18.png" src="../_images/b5b09bc6f5fb75c8a66d88072a5774c5c500993c4c132f3e9fbb3579b26cad18.png" />
+<img alt="../_images/5bf5a3f23f9a3495ed6f6744b63e0bdcc11d6bce2ee4c7d1e7ddcdef6ebd553e.png" src="../_images/5bf5a3f23f9a3495ed6f6744b63e0bdcc11d6bce2ee4c7d1e7ddcdef6ebd553e.png" />
 </div>
 </div>
 </section>
@@ -1160,10 +1194,10 @@ LnBF: 303.45
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>|<span class=" -Color -Color-Blue">funnel</span>|INFO| <span class=" -Color -Color-Green">Calculating FI LnZ with 10 reference points and a posterior of size: (147634, 58)</span> 
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>|<span class=" -Color -Color-Blue">funnel</span>|INFO| <span class=" -Color -Color-Green">Calculating FI LnZ with 10 reference points and a posterior of size: (147634, 55)</span> 
 </pre></div>
 </div>
-<script type="application/vnd.jupyter.widget-view+json">{"version_major": 2, "version_minor": 0, "model_id": "750dfa57d12443ab9493afdba4dc5eb3"}</script></div>
+<script type="application/vnd.jupyter.widget-view+json">{"version_major": 2, "version_minor": 0, "model_id": "824811b67f314518be731a26ef2f2a01"}</script></div>
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
@@ -1173,10 +1207,6 @@ LnBF: 303.45
 </pre></div>
 </div>
 </div>
-<div class="cell_output docutils container">
-<img alt="../_images/27f694da69a3b3c3fb0ff2812afe352301a45a197c4dbb9f24ef64dba6679d6b.png" src="../_images/27f694da69a3b3c3fb0ff2812afe352301a45a197c4dbb9f24ef64dba6679d6b.png" />
-<img alt="../_images/27f694da69a3b3c3fb0ff2812afe352301a45a197c4dbb9f24ef64dba6679d6b.png" src="../_images/27f694da69a3b3c3fb0ff2812afe352301a45a197c4dbb9f24ef64dba6679d6b.png" />
-</div>
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
@@ -1184,9 +1214,6 @@ LnBF: 303.45
 <span class="n">fig</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;lnBF&quot;</span><span class="p">);</span>
 </pre></div>
 </div>
-</div>
-<div class="cell_output docutils container">
-<img alt="../_images/242fadfed02b8ab589da5f1182818a300f6c5ee8a909a603eaffbf4ac045ece6.png" src="../_images/242fadfed02b8ab589da5f1182818a300f6c5ee8a909a603eaffbf4ac045ece6.png" />
 </div>
 </div>
 </section>

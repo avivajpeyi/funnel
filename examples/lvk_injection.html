@@ -388,12 +388,6 @@ document.write(`
 </pre></div>
 </div>
 </div>
-<div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>The autoreload extension is already loaded. To reload it, use:
-  %reload_ext autoreload
-</pre></div>
-</div>
-</div>
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
@@ -623,20 +617,15 @@ LnL- Noise LnL: 90.09
 <p>We download a pre-run LVK injection.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython2 notranslate"><div class="highlight"><pre><span></span><span class="c1"># load the LVK posterior</span>
+<div class="highlight-ipython2 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">bilby</span>
+
+<span class="c1"># load the LVK posterior</span>
 <span class="n">FPATH</span> <span class="o">=</span> <span class="s1">&#39;128_cpus_v1_0_result.hdf5&#39;</span>
 
-
-<span class="kn">import</span> <span class="nn">bilby</span>
-
-<span class="c1"># r = bilby.gw.result.CBCResult.from_hdf5(FPATH)</span>
-<span class="c1"># r.posterior</span>
-<span class="c1"># print(r.search_parameter_keys)</span>
 <span class="n">LVK_data</span> <span class="o">=</span> <span class="n">namedtuple</span><span class="p">(</span><span class="s2">&quot;LVK_data&quot;</span><span class="p">,</span> <span class="s2">&quot;posterior, lnz, lnz_err, lnBF&quot;</span><span class="p">)</span>
-<span class="c1"># #</span>
-<span class="c1">#</span>
+
 <span class="k">def</span> <span class="nf">load_lvk_data</span><span class="p">(</span><span class="n">fpath</span><span class="p">):</span>
-    <span class="n">r</span> <span class="o">=</span> <span class="n">bilby</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">result</span><span class="o">.</span><span class="n">CBCResult</span><span class="o">.</span><span class="n">from_hdf5</span><span class="p">(</span><span class="n">FPATH</span><span class="p">)</span>
+    <span class="n">r</span> <span class="o">=</span> <span class="n">bilby</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">result</span><span class="o">.</span><span class="n">CBCResult</span><span class="o">.</span><span class="n">from_hdf5</span><span class="p">(</span><span class="n">fpath</span><span class="p">)</span>
     <span class="n">post</span> <span class="o">=</span> <span class="n">r</span><span class="o">.</span><span class="n">posterior</span>
     <span class="n">sampling_params</span> <span class="o">=</span><span class="n">r</span><span class="o">.</span><span class="n">search_parameter_keys</span> <span class="o">+</span> <span class="p">[</span><span class="s1">&#39;log_likelihood&#39;</span><span class="p">,</span> <span class="s1">&#39;log_prior&#39;</span><span class="p">,</span> <span class="s1">&#39;luminosity_distance&#39;</span><span class="p">]</span>
     <span class="n">lnz</span><span class="p">,</span> <span class="n">lnz_err</span> <span class="o">=</span>  <span class="n">r</span><span class="o">.</span><span class="n">log_evidence</span><span class="p">,</span> <span class="n">r</span><span class="o">.</span><span class="n">log_evidence_err</span>
@@ -684,124 +673,148 @@ LnBF: 56.96249503300896
   <thead>
     <tr style="text-align: right;">
       <th></th>
-      <th>chirp_mass</th>
-      <th>mass_ratio</th>
-      <th>a_1</th>
-      <th>a_2</th>
-      <th>tilt_1</th>
-      <th>tilt_2</th>
-      <th>phi_12</th>
-      <th>phi_jl</th>
-      <th>cos_theta_jn</th>
-      <th>psi</th>
-      <th>phase</th>
-      <th>azimuth</th>
-      <th>zenith</th>
-      <th>time_jitter</th>
-      <th>log_likelihood</th>
-      <th>log_prior</th>
-      <th>luminosity_distance</th>
+      <th>0</th>
+      <th>1</th>
+      <th>2</th>
+      <th>3</th>
+      <th>4</th>
     </tr>
   </thead>
   <tbody>
     <tr>
-      <th>0</th>
+      <th>chirp_mass</th>
       <td>17.303518</td>
-      <td>0.640732</td>
-      <td>0.122786</td>
-      <td>0.294212</td>
-      <td>2.671935</td>
-      <td>0.617993</td>
-      <td>5.277061</td>
-      <td>5.421349</td>
-      <td>0.649265</td>
-      <td>3.033949</td>
-      <td>3.838546</td>
-      <td>3.105585</td>
-      <td>0.552605</td>
-      <td>-0.000104</td>
-      <td>59.964813</td>
-      <td>-7.725553</td>
-      <td>835.104547</td>
-    </tr>
-    <tr>
-      <th>1</th>
       <td>17.137896</td>
-      <td>0.363822</td>
-      <td>0.126647</td>
-      <td>0.671431</td>
-      <td>1.089454</td>
-      <td>1.095211</td>
-      <td>5.083531</td>
-      <td>0.331844</td>
-      <td>-0.750138</td>
-      <td>1.530611</td>
-      <td>4.858204</td>
-      <td>2.906103</td>
-      <td>0.251147</td>
-      <td>0.000073</td>
-      <td>63.408287</td>
-      <td>-6.777387</td>
-      <td>644.254930</td>
-    </tr>
-    <tr>
-      <th>2</th>
       <td>17.406246</td>
-      <td>0.475442</td>
-      <td>0.208230</td>
-      <td>0.858286</td>
-      <td>0.899129</td>
-      <td>1.673787</td>
-      <td>0.924704</td>
-      <td>3.584094</td>
-      <td>-0.906039</td>
-      <td>2.617934</td>
-      <td>0.359604</td>
-      <td>2.371659</td>
-      <td>0.141375</td>
-      <td>-0.000216</td>
-      <td>63.456029</td>
-      <td>-7.630868</td>
-      <td>1117.045547</td>
-    </tr>
-    <tr>
-      <th>3</th>
       <td>17.221114</td>
-      <td>0.716670</td>
-      <td>0.124358</td>
-      <td>0.436716</td>
-      <td>2.487101</td>
-      <td>1.440678</td>
-      <td>4.632946</td>
-      <td>4.388201</td>
-      <td>-0.887552</td>
-      <td>1.037721</td>
-      <td>1.671526</td>
-      <td>2.250562</td>
-      <td>0.281922</td>
-      <td>0.000176</td>
-      <td>63.735976</td>
-      <td>-7.647782</td>
-      <td>1151.937210</td>
+      <td>17.224999</td>
     </tr>
     <tr>
-      <th>4</th>
-      <td>17.224999</td>
+      <th>mass_ratio</th>
+      <td>0.640732</td>
+      <td>0.363822</td>
+      <td>0.475442</td>
+      <td>0.716670</td>
       <td>0.535031</td>
+    </tr>
+    <tr>
+      <th>a_1</th>
+      <td>0.122786</td>
+      <td>0.126647</td>
+      <td>0.208230</td>
+      <td>0.124358</td>
       <td>0.064088</td>
+    </tr>
+    <tr>
+      <th>a_2</th>
+      <td>0.294212</td>
+      <td>0.671431</td>
+      <td>0.858286</td>
+      <td>0.436716</td>
       <td>0.239654</td>
+    </tr>
+    <tr>
+      <th>tilt_1</th>
+      <td>2.671935</td>
+      <td>1.089454</td>
+      <td>0.899129</td>
+      <td>2.487101</td>
       <td>1.332991</td>
+    </tr>
+    <tr>
+      <th>tilt_2</th>
+      <td>0.617993</td>
+      <td>1.095211</td>
+      <td>1.673787</td>
+      <td>1.440678</td>
       <td>1.530625</td>
+    </tr>
+    <tr>
+      <th>phi_12</th>
+      <td>5.277061</td>
+      <td>5.083531</td>
+      <td>0.924704</td>
+      <td>4.632946</td>
       <td>5.622373</td>
+    </tr>
+    <tr>
+      <th>phi_jl</th>
+      <td>5.421349</td>
+      <td>0.331844</td>
+      <td>3.584094</td>
+      <td>4.388201</td>
       <td>4.657011</td>
+    </tr>
+    <tr>
+      <th>cos_theta_jn</th>
+      <td>0.649265</td>
+      <td>-0.750138</td>
+      <td>-0.906039</td>
+      <td>-0.887552</td>
       <td>-0.956641</td>
+    </tr>
+    <tr>
+      <th>psi</th>
+      <td>3.033949</td>
+      <td>1.530611</td>
+      <td>2.617934</td>
+      <td>1.037721</td>
       <td>3.061500</td>
+    </tr>
+    <tr>
+      <th>phase</th>
+      <td>3.838546</td>
+      <td>4.858204</td>
+      <td>0.359604</td>
+      <td>1.671526</td>
       <td>3.573420</td>
+    </tr>
+    <tr>
+      <th>azimuth</th>
+      <td>3.105585</td>
+      <td>2.906103</td>
+      <td>2.371659</td>
+      <td>2.250562</td>
       <td>1.480921</td>
+    </tr>
+    <tr>
+      <th>zenith</th>
+      <td>0.552605</td>
+      <td>0.251147</td>
+      <td>0.141375</td>
+      <td>0.281922</td>
       <td>0.242988</td>
+    </tr>
+    <tr>
+      <th>time_jitter</th>
+      <td>-0.000104</td>
+      <td>0.000073</td>
+      <td>-0.000216</td>
+      <td>0.000176</td>
       <td>0.000130</td>
+    </tr>
+    <tr>
+      <th>log_likelihood</th>
+      <td>59.964813</td>
+      <td>63.408287</td>
+      <td>63.456029</td>
+      <td>63.735976</td>
       <td>63.985682</td>
+    </tr>
+    <tr>
+      <th>log_prior</th>
+      <td>-7.725553</td>
+      <td>-6.777387</td>
+      <td>-7.630868</td>
+      <td>-7.647782</td>
       <td>-7.011267</td>
+    </tr>
+    <tr>
+      <th>luminosity_distance</th>
+      <td>835.104547</td>
+      <td>644.254930</td>
+      <td>1117.045547</td>
+      <td>1151.937210</td>
       <td>1433.822042</td>
     </tr>
   </tbody>
@@ -843,7 +856,7 @@ LnBF: 56.96249503300896
 <div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Using 65.81% of posterior samples, and trying out 100 reference points.
 </pre></div>
 </div>
-<script type="application/vnd.jupyter.widget-view+json">{"version_major": 2, "version_minor": 0, "model_id": "572865929ca242548441b501394eb2a3"}</script></div>
+<script type="application/vnd.jupyter.widget-view+json">{"version_major": 2, "version_minor": 0, "model_id": "728902a948ed4ec5a186e793d7240b38"}</script></div>
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
@@ -854,7 +867,7 @@ LnBF: 56.96249503300896
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../_images/5706fb469074e634dad64f4da768c675997c23be3e2562039ca9ca1f04c2b62b.png" src="../_images/5706fb469074e634dad64f4da768c675997c23be3e2562039ca9ca1f04c2b62b.png" />
+<img alt="../_images/09dd3930cf4798975e83a24a1c34df9c793e2cf299bd52e5c8a6e8c17150f2d6.png" src="../_images/09dd3930cf4798975e83a24a1c34df9c793e2cf299bd52e5c8a6e8c17150f2d6.png" />
 </div>
 </div>
 <div class="cell docutils container">
@@ -865,7 +878,7 @@ LnBF: 56.96249503300896
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../_images/3f1e652d6cee6fbc14bebee425efb77dd93726bdac84f203789946932e3dc225.png" src="../_images/3f1e652d6cee6fbc14bebee425efb77dd93726bdac84f203789946932e3dc225.png" />
+<img alt="../_images/6ede8645f1f75c12c0f0f30e508eb00ac4e43212334f083d53d107f940df7613.png" src="../_images/6ede8645f1f75c12c0f0f30e508eb00ac4e43212334f083d53d107f940df7613.png" />
 </div>
 </div>
 </section>
@@ -884,7 +897,7 @@ LnBF: 56.96249503300896
 <span class="n">lnzs</span><span class="p">,</span> <span class="n">r_vals</span> <span class="o">=</span> <span class="n">get_fi_lnz_list</span><span class="p">(</span>
     <span class="n">post</span><span class="p">,</span>
     <span class="n">num_ref_params</span><span class="o">=</span><span class="n">N_REF_POINTS</span><span class="p">,</span>
-    <span class="n">r_vals</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">geomspace</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mf">1e9</span><span class="p">,</span> <span class="mi">100</span><span class="p">),</span>
+    <span class="n">r_vals</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mf">1e5</span><span class="p">,</span> <span class="mf">2e5</span><span class="p">,</span> <span class="mi">100</span><span class="p">),</span>
     <span class="n">cache_fn</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">OUTDIR</span><span class="si">}</span><span class="s1">/lnzs.npz&#39;</span><span class="p">,</span>
 <span class="p">)</span>
 </pre></div>
@@ -894,40 +907,58 @@ LnBF: 56.96249503300896
 <div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>|<span class=" -Color -Color-Blue">funnel</span>|INFO| <span class=" -Color -Color-Green">Calculating FI LnZ with 100 reference points and a posterior of size: (15196, 15)</span> 
 </pre></div>
 </div>
-<script type="application/vnd.jupyter.widget-view+json">{"version_major": 2, "version_minor": 0, "model_id": "134540d1be434dcbae4b648de7f70209"}</script></div>
+<script type="application/vnd.jupyter.widget-view+json">{"version_major": 2, "version_minor": 0, "model_id": "6c3cfa61440b4bca8b969cef8ad512d6"}</script></div>
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython2 notranslate"><div class="highlight"><pre><span></span><span class="n">plt_kwgs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">lnzs</span><span class="o">=</span><span class="n">lnzs</span><span class="p">,</span> <span class="n">r_vals</span><span class="o">=</span><span class="n">r_vals</span><span class="p">,</span><span class="n">sampling_lnz</span><span class="o">=</span><span class="p">[</span><span class="n">CBC_data</span><span class="o">.</span><span class="n">lnBF</span><span class="p">])</span>
 <span class="n">fig</span> <span class="o">=</span> <span class="n">plot_fi_evidence_results</span><span class="p">(</span><span class="o">**</span><span class="n">plt_kwgs</span><span class="p">)</span>
-<span class="n">fig</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;lnBF&quot;</span><span class="p">);</span>
+<span class="n">ax</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;lnBF&quot;</span><span class="p">);</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_xscale</span><span class="p">(</span><span class="s1">&#39;linear&#39;</span><span class="p">)</span>
+<span class="c1"># use 10^x labels</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_xticks</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">logspace</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mf">5.3</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../_images/15bea6ce913c5d7096194a53de92872a87b1b6c51db31417fde07281b9d9449c.png" src="../_images/15bea6ce913c5d7096194a53de92872a87b1b6c51db31417fde07281b9d9449c.png" />
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[&lt;matplotlib.axis.XTick at 0x1384f0390&gt;,
+ &lt;matplotlib.axis.XTick at 0x1384641d0&gt;,
+ &lt;matplotlib.axis.XTick at 0x1386710d0&gt;]
+</pre></div>
+</div>
+<img alt="../_images/9af7f11b2a09bd5c541d92ce224023131f99572eb5ab03f29ca2a226f50c5741.png" src="../_images/9af7f11b2a09bd5c541d92ce224023131f99572eb5ab03f29ca2a226f50c5741.png" />
 </div>
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython2 notranslate"><div class="highlight"><pre><span></span><span class="n">fig</span> <span class="o">=</span> <span class="n">plot_fi_evidence_results</span><span class="p">(</span><span class="o">**</span><span class="n">plt_kwgs</span><span class="p">,</span> <span class="n">plot_all_lnzs</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">plt_kwgs</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">2</span><span class="p">))</span>
-<span class="n">fig</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;lnBF&quot;</span><span class="p">);</span>
+<div class="highlight-ipython2 notranslate"><div class="highlight"><pre><span></span><span class="n">fig</span> <span class="o">=</span> <span class="n">plot_fi_evidence_results</span><span class="p">(</span><span class="o">**</span><span class="n">plt_kwgs</span><span class="p">,</span> <span class="n">plot_all_lnzs</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">plt_kwgs</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">alpha</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">2</span><span class="p">))</span>
+<span class="n">ax</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;lnBF&quot;</span><span class="p">);</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_xscale</span><span class="p">(</span><span class="s1">&#39;linear&#39;</span><span class="p">)</span>
+<span class="c1"># use 10^x labels</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_xticks</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">logspace</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mf">5.3</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../_images/46ac6a60fb7e8cea4c890aa3da8a80e5aa5922fbf713fbc92bb276f6d32a6c97.png" src="../_images/46ac6a60fb7e8cea4c890aa3da8a80e5aa5922fbf713fbc92bb276f6d32a6c97.png" />
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[&lt;matplotlib.axis.XTick at 0x1387c0550&gt;,
+ &lt;matplotlib.axis.XTick at 0x13627ea50&gt;,
+ &lt;matplotlib.axis.XTick at 0x138b39990&gt;]
+</pre></div>
+</div>
+<img alt="../_images/f7cc4e235c2c3b32a1bfe0eb1d6adf41c4649578e4cadd354dae296799767878.png" src="../_images/f7cc4e235c2c3b32a1bfe0eb1d6adf41c4649578e4cadd354dae296799767878.png" />
 </div>
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython2 notranslate"><div class="highlight"><pre><span></span><span class="c1"># numpy count of nans in lnzs</span>
-<span class="mi">100</span><span class="o">*</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">lnzs</span><span class="p">))</span><span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">lnzs</span><span class="o">.</span><span class="n">ravel</span><span class="p">()))</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Percent of nans: </span><span class="si">{</span><span class="mi">100</span><span class="o">*</span><span class="w"> </span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">lnzs</span><span class="p">))</span><span class="o">/</span><span class="w"> </span><span class="nb">len</span><span class="p">(</span><span class="n">lnzs</span><span class="o">.</span><span class="n">ravel</span><span class="p">()))</span><span class="si">}</span><span class="s2"> %&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>50.23
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Percent of nans: 50.21 %
 </pre></div>
 </div>
 </div>

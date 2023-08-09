@@ -30,7 +30,7 @@ def plot_fi_evidence_results(
     lnzs=np.array([]),
 ):
     if len(lnzs) == 0:
-        lnzs, r_vals = get_fi_lnz_list(posterior_samples, r_vals, num_ref_params)
+        lnzs, r_vals, _ = get_fi_lnz_list(posterior_samples, r_vals, num_ref_params)
     lnz_quants = np.nanquantile(lnzs, [0.16, 0.5, 0.84], axis=0)
 
     # PLOT Nested Sampling LnZ

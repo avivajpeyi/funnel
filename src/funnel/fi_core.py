@@ -126,8 +126,6 @@ def get_fi_lnz_list(
     median_lnzs = np.zeros(num_ref_params)
     med_ = 0
 
-    patricio_lnzs = np.zeros(num_ref_params)
-
     with trange(num_ref_params, desc="FI LnZ", postfix=f"FI LnZ: {med_}") as pbar:
         for i in pbar:
             refi = ref_idx[i]
@@ -143,12 +141,12 @@ def get_fi_lnz_list(
             lnzs[i] = np.array([fi_ln_evidence(**fi_kwargs, r=ri) for ri in r_vals])
             median_lnzs[i] = np.nanmedian(lnzs[i])
 
-            patricio_lnzs[i] = get_fi_lnz_no_r(**fi_kwargs)
 
             pbar.set_postfix_str(f"FI LnZ: {med_:.2f}")
             pbar.update()
 
+    samp = post[ref_idx]
     if cache_fn:
-        np.savez(cache_fn, lnzs=lnzs, r_vals=r_vals)
+        np.savez(cache_fn, lnzs=lnzs, r_vals=r_vals, samp=samp)
 
-    return lnzs, r_vals
+    return lnzs, r_vals, samp

@@ -401,22 +401,6 @@ document.write(`
 <h2>Load GW150914 posterior + Nested Sampling LnZ<a class="headerlink" href="#load-gw150914-posterior-nested-sampling-lnz" title="Permalink to this heading">#</a></h2>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython2 notranslate"><div class="highlight"><pre><span></span><span class="o">!</span><span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>loguru
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Looking in indexes: https://pypi.org/simple, https://packagecloud.io/eugeny/tabby/pypi/simple
-Collecting loguru
-  Using cached loguru-0.7.0-py3-none-any.whl (59 kB)
-Installing collected packages: loguru
-Successfully installed loguru-0.7.0
-</pre></div>
-</div>
-</div>
-</div>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
 <div class="highlight-ipython2 notranslate"><div class="highlight"><pre><span></span><span class="c1"># load the LVK posterior</span>
 <span class="n">FPATH</span> <span class="o">=</span> <span class="s1">&#39;IGWN-GWTC2p1-v2-GW150914_095045_PEDataRelease_mixed_cosmo.h5&#39;</span>
 
@@ -448,12 +432,15 @@ Successfully installed loguru-0.7.0
 <div class="cell_input docutils container">
 <div class="highlight-ipython2 notranslate"><div class="highlight"><pre><span></span><span class="c1"># GW150914_data.posterior.columns WITHOUT log_likelihood and log_prior</span>
 <span class="n">sampling_params</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">GW150914_data</span><span class="o">.</span><span class="n">posterior</span><span class="o">.</span><span class="n">columns</span><span class="p">))</span><span class="o">-</span><span class="nb">set</span><span class="p">([</span><span class="s1">&#39;log_likelihood&#39;</span><span class="p">,</span> <span class="s1">&#39;log_prior&#39;</span><span class="p">])</span>
+
+<span class="n">cbc_params</span> <span class="o">=</span> <span class="p">[]</span>
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;CBC PARAMS:&quot;</span><span class="p">)</span>
 <span class="n">count</span> <span class="o">=</span> <span class="mi">0</span>
 <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">sampling_params</span><span class="p">):</span>
     <span class="k">if</span> <span class="s1">&#39;calib&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">i</span><span class="p">:</span>
         <span class="n">count</span> <span class="o">+=</span> <span class="mi">1</span>
         <span class="nb">print</span><span class="p">(</span><span class="n">count</span><span class="p">,</span> <span class="s2">&quot;)&quot;</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
+        <span class="n">cbc_params</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;CALIB PARAMS:&quot;</span><span class="p">)</span>
 <span class="n">calib_params</span> <span class="o">=</span> <span class="p">[]</span>
 <span class="n">count</span> <span class="o">=</span> <span class="mi">0</span>
@@ -530,91 +517,163 @@ CALIB PARAMS:
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython2 notranslate"><div class="highlight"><pre><span></span><span class="n">data</span> <span class="o">=</span> <span class="n">h5py</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="n">FPATH</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span>
+<span class="n">count</span> <span class="o">=</span> <span class="mi">0</span>
 <span class="k">for</span> <span class="n">k</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;C01:IMRPhenomXPHM/priors/analytic&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-    <span class="nb">print</span><span class="p">(</span><span class="n">k</span><span class="p">,</span><span class="n">v</span><span class="p">[()])</span>
+    <span class="k">if</span> <span class="s2">&quot;DeltaFunction&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="nb">str</span><span class="p">(</span><span class="n">v</span><span class="p">[()]):</span>
+        <span class="n">count</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">count</span><span class="si">:</span><span class="s2">2d</span><span class="si">}</span><span class="s2">) </span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;SKIP) </span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span><span class="c1">#:  {v[()]}&quot;)</span>
 <span class="n">data</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>a_1 [b&quot;Uniform(minimum=0, maximum=0.99, name=&#39;a_1&#39;, latex_label=&#39;$a_1$&#39;, unit=None, boundary=None)&quot;]
-a_2 [b&quot;Uniform(minimum=0, maximum=0.99, name=&#39;a_2&#39;, latex_label=&#39;$a_2$&#39;, unit=None, boundary=None)&quot;]
-azimuth [b&quot;Uniform(minimum=0, maximum=6.283185307179586, name=None, latex_label=&#39;$\\\\epsilon$&#39;, unit=None, boundary=&#39;periodic&#39;)&quot;]
-chirp_mass [b&quot;UniformInComponentsChirpMass(minimum=21.418182160215295, maximum=41.97447913941358, name=&#39;chirp_mass&#39;, latex_label=&#39;$\\\\mathcal{M}$&#39;, unit=&#39;$M_{\\\\odot}$&#39;, boundary=None)&quot;]
-geocent_time [b&quot;Uniform(minimum=1126259462.2910001, maximum=1126259462.491, name=&#39;geocent_time&#39;, latex_label=&#39;$t_c$&#39;, unit=&#39;$s$&#39;, boundary=None)&quot;]
-luminosity_distance [b&quot;PowerLaw(alpha=2, minimum=10, maximum=10000, name=&#39;luminosity_distance&#39;, latex_label=&#39;$d_L$&#39;, unit=&#39;Mpc&#39;, boundary=None)&quot;]
-mass_1 [b&quot;Constraint(minimum=1, maximum=1000, name=&#39;mass_1&#39;, latex_label=&#39;$m_1$&#39;, unit=None)&quot;]
-mass_2 [b&quot;Constraint(minimum=1, maximum=1000, name=&#39;mass_2&#39;, latex_label=&#39;$m_2$&#39;, unit=None)&quot;]
-mass_ratio [b&quot;UniformInComponentsMassRatio(minimum=0.05, maximum=1.0, name=&#39;mass_ratio&#39;, latex_label=&#39;$q$&#39;, unit=None, boundary=None)&quot;]
-phase [b&quot;Uniform(minimum=0, maximum=6.283185307179586, name=&#39;phase&#39;, latex_label=&#39;$\\\\phi$&#39;, unit=None, boundary=&#39;periodic&#39;)&quot;]
-phi_12 [b&quot;Uniform(minimum=0, maximum=6.283185307179586, name=&#39;phi_12&#39;, latex_label=&#39;$\\\\Delta\\\\phi$&#39;, unit=None, boundary=&#39;periodic&#39;)&quot;]
-phi_jl [b&quot;Uniform(minimum=0, maximum=6.283185307179586, name=&#39;phi_jl&#39;, latex_label=&#39;$\\\\phi_{JL}$&#39;, unit=None, boundary=&#39;periodic&#39;)&quot;]
-psi [b&quot;Uniform(minimum=0, maximum=3.141592653589793, name=&#39;psi&#39;, latex_label=&#39;$\\\\psi$&#39;, unit=None, boundary=&#39;periodic&#39;)&quot;]
-recalib_H1_amplitude_0 [b&quot;Gaussian(mu=0.0022497139999999582, sigma=0.032482292999999995, name=&#39;recalib_H1_amplitude_0&#39;, latex_label=&#39;$A^H1_0$&#39;, unit=None, boundary=&#39;reflective&#39;)&quot;]
-recalib_H1_amplitude_1 [b&quot;Gaussian(mu=-0.0022525476996070083, sigma=0.03909717651863342, name=&#39;recalib_H1_amplitude_1&#39;, latex_label=&#39;$A^H1_1$&#39;, unit=None, boundary=&#39;reflective&#39;)&quot;]
-recalib_H1_amplitude_2 [b&quot;Gaussian(mu=0.004632777733005889, sigma=0.04078174073734512, name=&#39;recalib_H1_amplitude_2&#39;, latex_label=&#39;$A^H1_2$&#39;, unit=None, boundary=&#39;reflective&#39;)&quot;]
-recalib_H1_amplitude_3 [b&quot;Gaussian(mu=0.003987700439142069, sigma=0.03287682593561539, name=&#39;recalib_H1_amplitude_3&#39;, latex_label=&#39;$A^H1_3$&#39;, unit=None, boundary=&#39;reflective&#39;)&quot;]
-recalib_H1_amplitude_4 [b&quot;Gaussian(mu=0.0018107999614999065, sigma=0.01936965624646965, name=&#39;recalib_H1_amplitude_4&#39;, latex_label=&#39;$A^H1_4$&#39;, unit=None, boundary=&#39;reflective&#39;)&quot;]
-recalib_H1_amplitude_5 [b&quot;Gaussian(mu=0.003528123018086278, sigma=0.012591404744135145, name=&#39;recalib_H1_amplitude_5&#39;, latex_label=&#39;$A^H1_5$&#39;, unit=None, boundary=&#39;reflective&#39;)&quot;]
-recalib_H1_amplitude_6 [b&quot;Gaussian(mu=-0.0018296964612414133, sigma=0.01075481852283716, name=&#39;recalib_H1_amplitude_6&#39;, latex_label=&#39;$A^H1_6$&#39;, unit=None, boundary=&#39;reflective&#39;)&quot;]
-recalib_H1_amplitude_7 [b&quot;Gaussian(mu=-0.005059244326670863, sigma=0.008407555954093059, name=&#39;recalib_H1_amplitude_7&#39;, latex_label=&#39;$A^H1_7$&#39;, unit=None, boundary=&#39;reflective&#39;)&quot;]
-recalib_H1_amplitude_8 [b&quot;Gaussian(mu=-0.0010763014001435082, sigma=0.01391150436119593, name=&#39;recalib_H1_amplitude_8&#39;, latex_label=&#39;$A^H1_8$&#39;, unit=None, boundary=&#39;reflective&#39;)&quot;]
-recalib_H1_amplitude_9 [b&quot;Gaussian(mu=-0.0017064540000000237, sigma=0.016027046000000045, name=&#39;recalib_H1_amplitude_9&#39;, latex_label=&#39;$A^H1_9$&#39;, unit=None, boundary=&#39;reflective&#39;)&quot;]
-recalib_H1_frequency_0 [b&quot;DeltaFunction(peak=19.999999999999996, name=&#39;recalib_H1_frequency_0&#39;, latex_label=&#39;$f^H1_0$&#39;, unit=None)&quot;]
-recalib_H1_frequency_1 [b&quot;DeltaFunction(peak=30.514434824844255, name=&#39;recalib_H1_frequency_1&#39;, latex_label=&#39;$f^H1_1$&#39;, unit=None)&quot;]
-recalib_H1_frequency_2 [b&quot;DeltaFunction(peak=46.55653663398341, name=&#39;recalib_H1_frequency_2&#39;, latex_label=&#39;$f^H1_2$&#39;, unit=None)&quot;]
-recalib_H1_frequency_3 [b&quot;DeltaFunction(peak=71.03232013940804, name=&#39;recalib_H1_frequency_3&#39;, latex_label=&#39;$f^H1_3$&#39;, unit=None)&quot;]
-recalib_H1_frequency_4 [b&quot;DeltaFunction(peak=108.37555516757195, name=&#39;recalib_H1_frequency_4&#39;, latex_label=&#39;$f^H1_4$&#39;, unit=None)&quot;]
-recalib_H1_frequency_5 [b&quot;DeltaFunction(peak=165.35094073835938, name=&#39;recalib_H1_frequency_5&#39;, latex_label=&#39;$f^H1_5$&#39;, unit=None)&quot;]
-recalib_H1_frequency_6 [b&quot;DeltaFunction(peak=252.27952521936786, name=&#39;recalib_H1_frequency_6&#39;, latex_label=&#39;$f^H1_6$&#39;, unit=None)&quot;]
-recalib_H1_frequency_7 [b&quot;DeltaFunction(peak=384.9083564974527, name=&#39;recalib_H1_frequency_7&#39;, latex_label=&#39;$f^H1_7$&#39;, unit=None)&quot;]
-recalib_H1_frequency_8 [b&quot;DeltaFunction(peak=587.2630478939719, name=&#39;recalib_H1_frequency_8&#39;, latex_label=&#39;$f^H1_8$&#39;, unit=None)&quot;]
-recalib_H1_frequency_9 [b&quot;DeltaFunction(peak=895.9999999999999, name=&#39;recalib_H1_frequency_9&#39;, latex_label=&#39;$f^H1_9$&#39;, unit=None)&quot;]
-recalib_H1_phase_0 [b&quot;Gaussian(mu=-0.009355752999999998, sigma=0.030123145, name=&#39;recalib_H1_phase_0&#39;, latex_label=&#39;$\\\\phi^H1_0$&#39;, unit=None, boundary=&#39;reflective&#39;)&quot;]
-recalib_H1_phase_1 [b&quot;Gaussian(mu=0.0050309026057799855, sigma=0.04177354702981138, name=&#39;recalib_H1_phase_1&#39;, latex_label=&#39;$\\\\phi^H1_1$&#39;, unit=None, boundary=&#39;reflective&#39;)&quot;]
-recalib_H1_phase_2 [b&quot;Gaussian(mu=0.0043774230879091115, sigma=0.045027737962814354, name=&#39;recalib_H1_phase_2&#39;, latex_label=&#39;$\\\\phi^H1_2$&#39;, unit=None, boundary=&#39;reflective&#39;)&quot;]
-recalib_H1_phase_3 [b&quot;Gaussian(mu=-0.0023545243645386326, sigma=0.036339899119904644, name=&#39;recalib_H1_phase_3&#39;, latex_label=&#39;$\\\\phi^H1_3$&#39;, unit=None, boundary=&#39;reflective&#39;)&quot;]
-recalib_H1_phase_4 [b&quot;Gaussian(mu=-0.00444209518471385, sigma=0.032837260835226936, name=&#39;recalib_H1_phase_4&#39;, latex_label=&#39;$\\\\phi^H1_4$&#39;, unit=None, boundary=&#39;reflective&#39;)&quot;]
-recalib_H1_phase_5 [b&quot;Gaussian(mu=-0.006872683631006688, sigma=0.02806419946997496, name=&#39;recalib_H1_phase_5&#39;, latex_label=&#39;$\\\\phi^H1_5$&#39;, unit=None, boundary=&#39;reflective&#39;)&quot;]
-recalib_H1_phase_6 [b&quot;Gaussian(mu=-0.01508554971905464, sigma=0.022470973360749408, name=&#39;recalib_H1_phase_6&#39;, latex_label=&#39;$\\\\phi^H1_6$&#39;, unit=None, boundary=&#39;reflective&#39;)&quot;]
-recalib_H1_phase_7 [b&quot;Gaussian(mu=-0.009105656795490394, sigma=0.0186470280190447, name=&#39;recalib_H1_phase_7&#39;, latex_label=&#39;$\\\\phi^H1_7$&#39;, unit=None, boundary=&#39;reflective&#39;)&quot;]
-recalib_H1_phase_8 [b&quot;Gaussian(mu=-0.01327344249855343, sigma=0.019250972190353967, name=&#39;recalib_H1_phase_8&#39;, latex_label=&#39;$\\\\phi^H1_8$&#39;, unit=None, boundary=&#39;reflective&#39;)&quot;]
-recalib_H1_phase_9 [b&quot;Gaussian(mu=-0.006712540999999999, sigma=0.020072625, name=&#39;recalib_H1_phase_9&#39;, latex_label=&#39;$\\\\phi^H1_9$&#39;, unit=None, boundary=&#39;reflective&#39;)&quot;]
-recalib_L1_amplitude_0 [b&quot;Gaussian(mu=0.005476730999999901, sigma=0.08406088199999993, name=&#39;recalib_L1_amplitude_0&#39;, latex_label=&#39;$A^L1_0$&#39;, unit=None, boundary=&#39;reflective&#39;)&quot;]
-recalib_L1_amplitude_1 [b&quot;Gaussian(mu=-0.012104387120680028, sigma=0.07651583147867605, name=&#39;recalib_L1_amplitude_1&#39;, latex_label=&#39;$A^L1_1$&#39;, unit=None, boundary=&#39;reflective&#39;)&quot;]
-recalib_L1_amplitude_2 [b&quot;Gaussian(mu=-0.013219120050478253, sigma=0.06508029899775643, name=&#39;recalib_L1_amplitude_2&#39;, latex_label=&#39;$A^L1_2$&#39;, unit=None, boundary=&#39;reflective&#39;)&quot;]
-recalib_L1_amplitude_3 [b&quot;Gaussian(mu=-0.006657329180423924, sigma=0.05665180922845485, name=&#39;recalib_L1_amplitude_3&#39;, latex_label=&#39;$A^L1_3$&#39;, unit=None, boundary=&#39;reflective&#39;)&quot;]
-recalib_L1_amplitude_4 [b&quot;Gaussian(mu=-0.0026286630232402308, sigma=0.05041154190241824, name=&#39;recalib_L1_amplitude_4&#39;, latex_label=&#39;$A^L1_4$&#39;, unit=None, boundary=&#39;reflective&#39;)&quot;]
-recalib_L1_amplitude_5 [b&quot;Gaussian(mu=-0.008989482013408759, sigma=0.0391433695986004, name=&#39;recalib_L1_amplitude_5&#39;, latex_label=&#39;$A^L1_5$&#39;, unit=None, boundary=&#39;reflective&#39;)&quot;]
-recalib_L1_amplitude_6 [b&quot;Gaussian(mu=-0.0112041341409286, sigma=0.02176964617289734, name=&#39;recalib_L1_amplitude_6&#39;, latex_label=&#39;$A^L1_6$&#39;, unit=None, boundary=&#39;reflective&#39;)&quot;]
-recalib_L1_amplitude_7 [b&quot;Gaussian(mu=-0.007323119754866439, sigma=0.01662038622968457, name=&#39;recalib_L1_amplitude_7&#39;, latex_label=&#39;$A^L1_7$&#39;, unit=None, boundary=&#39;reflective&#39;)&quot;]
-recalib_L1_amplitude_8 [b&quot;Gaussian(mu=-0.007118273569718694, sigma=0.017534092484121667, name=&#39;recalib_L1_amplitude_8&#39;, latex_label=&#39;$A^L1_8$&#39;, unit=None, boundary=&#39;reflective&#39;)&quot;]
-recalib_L1_amplitude_9 [b&quot;Gaussian(mu=-0.00654931000000003, sigma=0.018560549000000037, name=&#39;recalib_L1_amplitude_9&#39;, latex_label=&#39;$A^L1_9$&#39;, unit=None, boundary=&#39;reflective&#39;)&quot;]
-recalib_L1_frequency_0 [b&quot;DeltaFunction(peak=19.999999999999996, name=&#39;recalib_L1_frequency_0&#39;, latex_label=&#39;$f^L1_0$&#39;, unit=None)&quot;]
-recalib_L1_frequency_1 [b&quot;DeltaFunction(peak=30.514434824844255, name=&#39;recalib_L1_frequency_1&#39;, latex_label=&#39;$f^L1_1$&#39;, unit=None)&quot;]
-recalib_L1_frequency_2 [b&quot;DeltaFunction(peak=46.55653663398341, name=&#39;recalib_L1_frequency_2&#39;, latex_label=&#39;$f^L1_2$&#39;, unit=None)&quot;]
-recalib_L1_frequency_3 [b&quot;DeltaFunction(peak=71.03232013940804, name=&#39;recalib_L1_frequency_3&#39;, latex_label=&#39;$f^L1_3$&#39;, unit=None)&quot;]
-recalib_L1_frequency_4 [b&quot;DeltaFunction(peak=108.37555516757195, name=&#39;recalib_L1_frequency_4&#39;, latex_label=&#39;$f^L1_4$&#39;, unit=None)&quot;]
-recalib_L1_frequency_5 [b&quot;DeltaFunction(peak=165.35094073835938, name=&#39;recalib_L1_frequency_5&#39;, latex_label=&#39;$f^L1_5$&#39;, unit=None)&quot;]
-recalib_L1_frequency_6 [b&quot;DeltaFunction(peak=252.27952521936786, name=&#39;recalib_L1_frequency_6&#39;, latex_label=&#39;$f^L1_6$&#39;, unit=None)&quot;]
-recalib_L1_frequency_7 [b&quot;DeltaFunction(peak=384.9083564974527, name=&#39;recalib_L1_frequency_7&#39;, latex_label=&#39;$f^L1_7$&#39;, unit=None)&quot;]
-recalib_L1_frequency_8 [b&quot;DeltaFunction(peak=587.2630478939719, name=&#39;recalib_L1_frequency_8&#39;, latex_label=&#39;$f^L1_8$&#39;, unit=None)&quot;]
-recalib_L1_frequency_9 [b&quot;DeltaFunction(peak=895.9999999999999, name=&#39;recalib_L1_frequency_9&#39;, latex_label=&#39;$f^L1_9$&#39;, unit=None)&quot;]
-recalib_L1_phase_0 [b&quot;Gaussian(mu=-0.027121368999999992, sigma=0.065822439, name=&#39;recalib_L1_phase_0&#39;, latex_label=&#39;$\\\\phi^L1_0$&#39;, unit=None, boundary=&#39;reflective&#39;)&quot;]
-recalib_L1_phase_1 [b&quot;Gaussian(mu=-0.015666055283929895, sigma=0.06971337917415898, name=&#39;recalib_L1_phase_1&#39;, latex_label=&#39;$\\\\phi^L1_1$&#39;, unit=None, boundary=&#39;reflective&#39;)&quot;]
-recalib_L1_phase_2 [b&quot;Gaussian(mu=-0.0021521761445731018, sigma=0.06846083085274324, name=&#39;recalib_L1_phase_2&#39;, latex_label=&#39;$\\\\phi^L1_2$&#39;, unit=None, boundary=&#39;reflective&#39;)&quot;]
-recalib_L1_phase_3 [b&quot;Gaussian(mu=0.0022536976421022887, sigma=0.06194252192559962, name=&#39;recalib_L1_phase_3&#39;, latex_label=&#39;$\\\\phi^L1_3$&#39;, unit=None, boundary=&#39;reflective&#39;)&quot;]
-recalib_L1_phase_4 [b&quot;Gaussian(mu=-0.002461783883218465, sigma=0.048859883075223744, name=&#39;recalib_L1_phase_4&#39;, latex_label=&#39;$\\\\phi^L1_4$&#39;, unit=None, boundary=&#39;reflective&#39;)&quot;]
-recalib_L1_phase_5 [b&quot;Gaussian(mu=-0.0067988571593666286, sigma=0.03330895148538794, name=&#39;recalib_L1_phase_5&#39;, latex_label=&#39;$\\\\phi^L1_5$&#39;, unit=None, boundary=&#39;reflective&#39;)&quot;]
-recalib_L1_phase_6 [b&quot;Gaussian(mu=0.0015671495057928866, sigma=0.0194164413063868, name=&#39;recalib_L1_phase_6&#39;, latex_label=&#39;$\\\\phi^L1_6$&#39;, unit=None, boundary=&#39;reflective&#39;)&quot;]
-recalib_L1_phase_7 [b&quot;Gaussian(mu=0.0016729416638600334, sigma=0.013796249113051186, name=&#39;recalib_L1_phase_7&#39;, latex_label=&#39;$\\\\phi^L1_7$&#39;, unit=None, boundary=&#39;reflective&#39;)&quot;]
-recalib_L1_phase_8 [b&quot;Gaussian(mu=0.003950310144720625, sigma=0.014338015652101466, name=&#39;recalib_L1_phase_8&#39;, latex_label=&#39;$\\\\phi^L1_8$&#39;, unit=None, boundary=&#39;reflective&#39;)&quot;]
-recalib_L1_phase_9 [b&quot;Gaussian(mu=0.008061858000000002, sigma=0.015019266, name=&#39;recalib_L1_phase_9&#39;, latex_label=&#39;$\\\\phi^L1_9$&#39;, unit=None, boundary=&#39;reflective&#39;)&quot;]
-theta_jn [b&quot;Sine(minimum=0, maximum=3.141592653589793, name=&#39;theta_jn&#39;, latex_label=&#39;$\\\\theta_{JN}$&#39;, unit=None, boundary=None)&quot;]
-tilt_1 [b&quot;Sine(minimum=0, maximum=3.141592653589793, name=&#39;tilt_1&#39;, latex_label=&#39;$\\\\theta_1$&#39;, unit=None, boundary=None)&quot;]
-tilt_2 [b&quot;Sine(minimum=0, maximum=3.141592653589793, name=&#39;tilt_2&#39;, latex_label=&#39;$\\\\theta_2$&#39;, unit=None, boundary=None)&quot;]
-time_jitter [b&quot;Uniform(minimum=-0.00048828125, maximum=0.00048828125, name=None, latex_label=None, unit=None, boundary=&#39;periodic&#39;)&quot;]
-zenith [b&quot;Sine(minimum=0, maximum=3.141592653589793, name=None, latex_label=&#39;$\\\\kappa$&#39;, unit=None, boundary=None)&quot;]
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span> 1) a_1
+ 2) a_2
+ 3) azimuth
+ 4) chirp_mass
+ 5) geocent_time
+ 6) luminosity_distance
+ 7) mass_1
+ 8) mass_2
+ 9) mass_ratio
+10) phase
+11) phi_12
+12) phi_jl
+13) psi
+14) recalib_H1_amplitude_0
+15) recalib_H1_amplitude_1
+16) recalib_H1_amplitude_2
+17) recalib_H1_amplitude_3
+18) recalib_H1_amplitude_4
+19) recalib_H1_amplitude_5
+20) recalib_H1_amplitude_6
+21) recalib_H1_amplitude_7
+22) recalib_H1_amplitude_8
+23) recalib_H1_amplitude_9
+SKIP) recalib_H1_frequency_0
+SKIP) recalib_H1_frequency_1
+SKIP) recalib_H1_frequency_2
+SKIP) recalib_H1_frequency_3
+SKIP) recalib_H1_frequency_4
+SKIP) recalib_H1_frequency_5
+SKIP) recalib_H1_frequency_6
+SKIP) recalib_H1_frequency_7
+SKIP) recalib_H1_frequency_8
+SKIP) recalib_H1_frequency_9
+24) recalib_H1_phase_0
+25) recalib_H1_phase_1
+26) recalib_H1_phase_2
+27) recalib_H1_phase_3
+28) recalib_H1_phase_4
+29) recalib_H1_phase_5
+30) recalib_H1_phase_6
+31) recalib_H1_phase_7
+32) recalib_H1_phase_8
+33) recalib_H1_phase_9
+34) recalib_L1_amplitude_0
+35) recalib_L1_amplitude_1
+36) recalib_L1_amplitude_2
+37) recalib_L1_amplitude_3
+38) recalib_L1_amplitude_4
+39) recalib_L1_amplitude_5
+40) recalib_L1_amplitude_6
+41) recalib_L1_amplitude_7
+42) recalib_L1_amplitude_8
+43) recalib_L1_amplitude_9
+SKIP) recalib_L1_frequency_0
+SKIP) recalib_L1_frequency_1
+SKIP) recalib_L1_frequency_2
+SKIP) recalib_L1_frequency_3
+SKIP) recalib_L1_frequency_4
+SKIP) recalib_L1_frequency_5
+SKIP) recalib_L1_frequency_6
+SKIP) recalib_L1_frequency_7
+SKIP) recalib_L1_frequency_8
+SKIP) recalib_L1_frequency_9
+44) recalib_L1_phase_0
+45) recalib_L1_phase_1
+46) recalib_L1_phase_2
+47) recalib_L1_phase_3
+48) recalib_L1_phase_4
+49) recalib_L1_phase_5
+50) recalib_L1_phase_6
+51) recalib_L1_phase_7
+52) recalib_L1_phase_8
+53) recalib_L1_phase_9
+54) theta_jn
+55) tilt_1
+56) tilt_2
+57) time_jitter
+58) zenith
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython2 notranslate"><div class="highlight"><pre><span></span><span class="n">sampling_params</span> <span class="c1"># remove geocent_time</span>
+<span class="n">sampling_params</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="s1">&#39;geocent_time&#39;</span><span class="p">)</span>
+<span class="n">sampling_params</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>{&#39;a_1&#39;,
+ &#39;a_2&#39;,
+ &#39;azimuth&#39;,
+ &#39;chirp_mass&#39;,
+ &#39;luminosity_distance&#39;,
+ &#39;mass_ratio&#39;,
+ &#39;phase&#39;,
+ &#39;phi_12&#39;,
+ &#39;phi_jl&#39;,
+ &#39;psi&#39;,
+ &#39;recalib_H1_amplitude_0&#39;,
+ &#39;recalib_H1_amplitude_1&#39;,
+ &#39;recalib_H1_amplitude_2&#39;,
+ &#39;recalib_H1_amplitude_3&#39;,
+ &#39;recalib_H1_amplitude_4&#39;,
+ &#39;recalib_H1_amplitude_5&#39;,
+ &#39;recalib_H1_amplitude_6&#39;,
+ &#39;recalib_H1_amplitude_7&#39;,
+ &#39;recalib_H1_amplitude_8&#39;,
+ &#39;recalib_H1_amplitude_9&#39;,
+ &#39;recalib_H1_phase_0&#39;,
+ &#39;recalib_H1_phase_1&#39;,
+ &#39;recalib_H1_phase_2&#39;,
+ &#39;recalib_H1_phase_3&#39;,
+ &#39;recalib_H1_phase_4&#39;,
+ &#39;recalib_H1_phase_5&#39;,
+ &#39;recalib_H1_phase_6&#39;,
+ &#39;recalib_H1_phase_7&#39;,
+ &#39;recalib_H1_phase_8&#39;,
+ &#39;recalib_H1_phase_9&#39;,
+ &#39;recalib_L1_amplitude_0&#39;,
+ &#39;recalib_L1_amplitude_1&#39;,
+ &#39;recalib_L1_amplitude_2&#39;,
+ &#39;recalib_L1_amplitude_3&#39;,
+ &#39;recalib_L1_amplitude_4&#39;,
+ &#39;recalib_L1_amplitude_5&#39;,
+ &#39;recalib_L1_amplitude_6&#39;,
+ &#39;recalib_L1_amplitude_7&#39;,
+ &#39;recalib_L1_amplitude_8&#39;,
+ &#39;recalib_L1_amplitude_9&#39;,
+ &#39;recalib_L1_phase_0&#39;,
+ &#39;recalib_L1_phase_1&#39;,
+ &#39;recalib_L1_phase_2&#39;,
+ &#39;recalib_L1_phase_3&#39;,
+ &#39;recalib_L1_phase_4&#39;,
+ &#39;recalib_L1_phase_5&#39;,
+ &#39;recalib_L1_phase_6&#39;,
+ &#39;recalib_L1_phase_7&#39;,
+ &#39;recalib_L1_phase_8&#39;,
+ &#39;recalib_L1_phase_9&#39;,
+ &#39;theta_jn&#39;,
+ &#39;tilt_1&#39;,
+ &#39;tilt_2&#39;,
+ &#39;zenith&#39;}
 </pre></div>
 </div>
 </div>
@@ -1138,6 +1197,7 @@ LnBF: 303.45
 <span class="n">N_SAMP</span> <span class="o">=</span> <span class="mi">10000</span>
 <span class="n">N_REF_POINTS</span> <span class="o">=</span> <span class="mi">100</span>
 <span class="n">post</span> <span class="o">=</span> <span class="n">GW150914_data</span><span class="o">.</span><span class="n">posterior</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">N_SAMP</span><span class="p">,</span> <span class="n">weights</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">GW150914_data</span><span class="o">.</span><span class="n">posterior</span><span class="o">.</span><span class="n">log_likelihood</span><span class="p">))</span>
+<span class="n">post</span> <span class="o">=</span> <span class="n">post</span><span class="p">[</span><span class="nb">list</span><span class="p">(</span><span class="n">sampling_params</span><span class="p">)</span> <span class="o">+</span> <span class="p">[</span><span class="s1">&#39;log_likelihood&#39;</span><span class="p">,</span> <span class="s1">&#39;log_prior&#39;</span><span class="p">]]</span>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Using </span><span class="si">{</span><span class="mi">100</span><span class="o">*</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">post</span><span class="p">)</span><span class="o">/</span><span class="nb">len</span><span class="p">(</span><span class="n">GW150914_data</span><span class="o">.</span><span class="n">posterior</span><span class="p">))</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">% of posterior samples, and trying out </span><span class="si">{</span><span class="n">N_REF_POINTS</span><span class="si">}</span><span class="s2"> reference points.&quot;</span><span class="p">)</span>
 <span class="n">lnzs</span><span class="p">,</span> <span class="n">r_vals</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">get_fi_lnz_list</span><span class="p">(</span>
     <span class="n">post</span><span class="p">,</span>
@@ -1150,17 +1210,30 @@ LnBF: 303.45
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>|<span class=" -Color -Color-Blue">funnel</span>|INFO| <span class=" -Color -Color-Green">Calculating FI LnZ with 100 reference points and a posterior of size: (10000, 55)</span> 
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>|<span class=" -Color -Color-Blue">funnel</span>|INFO| <span class=" -Color -Color-Green">Calculating FI LnZ with 100 reference points and a posterior of size: (10000, 54)</span> 
 </pre></div>
 </div>
 <div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Using 6.77% of posterior samples, and trying out 100 reference points.
 </pre></div>
 </div>
-<script type="application/vnd.jupyter.widget-view+json">{"version_major": 2, "version_minor": 0, "model_id": "246e73424a9b4a89853bea00cadabbf5"}</script></div>
+<script type="application/vnd.jupyter.widget-view+json">{"version_major": 2, "version_minor": 0, "model_id": "9298f18b4d964321bf180cb108e3ef27"}</script></div>
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython2 notranslate"><div class="highlight"><pre><span></span><span class="n">plt_kwgs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">lnzs</span><span class="o">=</span><span class="n">lnzs</span><span class="p">,</span> <span class="n">r_vals</span><span class="o">=</span><span class="n">r_vals</span><span class="p">,</span><span class="n">sampling_lnz</span><span class="o">=</span><span class="p">[</span><span class="n">GW150914_data</span><span class="o">.</span><span class="n">lnBF</span><span class="p">])</span>
+<span class="n">fig</span> <span class="o">=</span> <span class="n">plot_fi_evidence_results</span><span class="p">(</span><span class="o">**</span><span class="n">plt_kwgs</span><span class="p">)</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;lnBF&quot;</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../_images/4df5fee48ff308176837b87250b35b24de4bda1d82e7b8f9f64899721ba9bed3.png" src="../_images/4df5fee48ff308176837b87250b35b24de4bda1d82e7b8f9f64899721ba9bed3.png" />
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython2 notranslate"><div class="highlight"><pre><span></span><span class="c1"># OLD</span>
+<span class="n">plt_kwgs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">lnzs</span><span class="o">=</span><span class="n">lnzs</span><span class="p">,</span> <span class="n">r_vals</span><span class="o">=</span><span class="n">r_vals</span><span class="p">,</span><span class="n">sampling_lnz</span><span class="o">=</span><span class="p">[</span><span class="n">GW150914_data</span><span class="o">.</span><span class="n">lnBF</span><span class="p">])</span>
 <span class="n">fig</span> <span class="o">=</span> <span class="n">plot_fi_evidence_results</span><span class="p">(</span><span class="o">**</span><span class="n">plt_kwgs</span><span class="p">)</span>
 <span class="n">fig</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;lnBF&quot;</span><span class="p">);</span>
 </pre></div>
@@ -1185,12 +1258,14 @@ LnBF: 303.45
 <span class="c1"># USING DOWNSAMPLED POSTERIOR SAMPLES</span>
 <span class="n">N_SAMP</span> <span class="o">=</span> <span class="mi">10000</span>
 <span class="n">N_REF_POINTS</span> <span class="o">=</span> <span class="mi">10</span>
-<span class="n">post</span> <span class="o">=</span> <span class="n">GW150914_data</span><span class="o">.</span><span class="n">posterior</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">N_SAMP</span><span class="p">,</span> <span class="n">weights</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">GW150914_data</span><span class="o">.</span><span class="n">posterior</span><span class="o">.</span><span class="n">log_likelihood</span><span class="p">))</span>
+<span class="n">weights</span> <span class="o">=</span> <span class="n">GW150914_data</span><span class="o">.</span><span class="n">posterior</span><span class="o">.</span><span class="n">log_likelihood</span> <span class="o">-</span> <span class="n">GW150914_data</span><span class="o">.</span><span class="n">posterior</span><span class="o">.</span><span class="n">log_likelihood</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+<span class="n">weights</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">weights</span><span class="p">)</span>
+<span class="n">post</span> <span class="o">=</span> <span class="n">GW150914_data</span><span class="o">.</span><span class="n">posterior</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">N_SAMP</span><span class="p">,</span> <span class="n">weights</span><span class="o">=</span><span class="n">weights</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Using </span><span class="si">{</span><span class="mi">100</span><span class="o">*</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">post</span><span class="p">)</span><span class="o">/</span><span class="nb">len</span><span class="p">(</span><span class="n">GW150914_data</span><span class="o">.</span><span class="n">posterior</span><span class="p">))</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">% of posterior samples, and trying out </span><span class="si">{</span><span class="n">N_REF_POINTS</span><span class="si">}</span><span class="s2"> reference points.&quot;</span><span class="p">)</span>
 
 <span class="c1"># post = post.drop(columns=calib_params)</span>
 
-<span class="n">lnzs</span><span class="p">,</span> <span class="n">r_vals</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">get_fi_lnz_list</span><span class="p">(</span>
+<span class="n">lnzs</span><span class="p">,</span> <span class="n">r_vals</span><span class="p">,</span> <span class="n">fi_samps</span> <span class="o">=</span> <span class="n">get_fi_lnz_list</span><span class="p">(</span>
     <span class="n">post</span><span class="p">,</span>
     <span class="n">num_ref_params</span><span class="o">=</span><span class="n">N_REF_POINTS</span><span class="p">,</span>
     <span class="n">r_vals</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">geomspace</span><span class="p">(</span><span class="mf">1e2</span><span class="p">,</span> <span class="mf">1e5</span><span class="p">,</span> <span class="mi">10</span><span class="p">),</span>
@@ -1205,13 +1280,97 @@ LnBF: 303.45
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>|<span class=" -Color -Color-Blue">funnel</span>|INFO| <span class=" -Color -Color-Green">Calculating FI LnZ with 100 reference points and a posterior of size: (10000, 15)</span> 
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>|<span class=" -Color -Color-Blue">funnel</span>|INFO| <span class=" -Color -Color-Green">Calculating FI LnZ with 10 reference points and a posterior of size: (10000, 55)</span> 
 </pre></div>
 </div>
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Using 6.77% of posterior samples, and trying out 100 reference points.
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Using 6.77% of posterior samples, and trying out 10 reference points.
 </pre></div>
 </div>
-<script type="application/vnd.jupyter.widget-view+json">{"version_major": 2, "version_minor": 0, "model_id": "184ecbe3b629437994fec6988cc07d99"}</script><img alt="../_images/2504617569640a6b051cd6d2284ab35c25a133d34a5b5138956ab228476992d7.png" src="../_images/2504617569640a6b051cd6d2284ab35c25a133d34a5b5138956ab228476992d7.png" />
+<script type="application/vnd.jupyter.widget-view+json">{"version_major": 2, "version_minor": 0, "model_id": "04a2bf2af7b7444980d70c02cd37ae4e"}</script><img alt="../_images/4a3eadc50e6dc23cc3ddb2a11f3aedbd8897f259f48a49032521fa2aa309d495.png" src="../_images/4a3eadc50e6dc23cc3ddb2a11f3aedbd8897f259f48a49032521fa2aa309d495.png" />
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython2 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">funnel.plotting</span> <span class="kn">import</span> <span class="n">plot_corner_and_mark_samples</span>
+
+<span class="n">p</span> <span class="o">=</span>  <span class="n">GW150914_data</span><span class="o">.</span><span class="n">posterior</span>
+<span class="n">weights</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">log_likelihood</span> <span class="o">-</span> <span class="n">p</span><span class="o">.</span><span class="n">log_likelihood</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+<span class="n">weights</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">weights</span><span class="p">)</span>
+<span class="n">samp</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="n">weights</span><span class="o">=</span><span class="n">weights</span><span class="p">)</span>
+<span class="n">p</span> <span class="o">=</span> <span class="n">p</span><span class="p">[</span><span class="n">cbc_params</span><span class="p">]</span>
+<span class="n">fi_samps</span> <span class="o">=</span> <span class="n">samp</span><span class="p">[</span><span class="n">cbc_params</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+<span class="n">fig</span> <span class="o">=</span> <span class="n">plot_corner_and_mark_samples</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">fi_samps</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../_images/b3e4f3a902b24581fa9e03a4d09bb129a8c34dc44c0b365015a5e6f2424b1ed6.png" src="../_images/b3e4f3a902b24581fa9e03a4d09bb129a8c34dc44c0b365015a5e6f2424b1ed6.png" />
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython2 notranslate"><div class="highlight"><pre><span></span><span class="n">sampling_params</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>{&#39;a_1&#39;,
+ &#39;a_2&#39;,
+ &#39;azimuth&#39;,
+ &#39;chirp_mass&#39;,
+ &#39;geocent_time&#39;,
+ &#39;luminosity_distance&#39;,
+ &#39;mass_ratio&#39;,
+ &#39;phase&#39;,
+ &#39;phi_12&#39;,
+ &#39;phi_jl&#39;,
+ &#39;psi&#39;,
+ &#39;recalib_H1_amplitude_0&#39;,
+ &#39;recalib_H1_amplitude_1&#39;,
+ &#39;recalib_H1_amplitude_2&#39;,
+ &#39;recalib_H1_amplitude_3&#39;,
+ &#39;recalib_H1_amplitude_4&#39;,
+ &#39;recalib_H1_amplitude_5&#39;,
+ &#39;recalib_H1_amplitude_6&#39;,
+ &#39;recalib_H1_amplitude_7&#39;,
+ &#39;recalib_H1_amplitude_8&#39;,
+ &#39;recalib_H1_amplitude_9&#39;,
+ &#39;recalib_H1_phase_0&#39;,
+ &#39;recalib_H1_phase_1&#39;,
+ &#39;recalib_H1_phase_2&#39;,
+ &#39;recalib_H1_phase_3&#39;,
+ &#39;recalib_H1_phase_4&#39;,
+ &#39;recalib_H1_phase_5&#39;,
+ &#39;recalib_H1_phase_6&#39;,
+ &#39;recalib_H1_phase_7&#39;,
+ &#39;recalib_H1_phase_8&#39;,
+ &#39;recalib_H1_phase_9&#39;,
+ &#39;recalib_L1_amplitude_0&#39;,
+ &#39;recalib_L1_amplitude_1&#39;,
+ &#39;recalib_L1_amplitude_2&#39;,
+ &#39;recalib_L1_amplitude_3&#39;,
+ &#39;recalib_L1_amplitude_4&#39;,
+ &#39;recalib_L1_amplitude_5&#39;,
+ &#39;recalib_L1_amplitude_6&#39;,
+ &#39;recalib_L1_amplitude_7&#39;,
+ &#39;recalib_L1_amplitude_8&#39;,
+ &#39;recalib_L1_amplitude_9&#39;,
+ &#39;recalib_L1_phase_0&#39;,
+ &#39;recalib_L1_phase_1&#39;,
+ &#39;recalib_L1_phase_2&#39;,
+ &#39;recalib_L1_phase_3&#39;,
+ &#39;recalib_L1_phase_4&#39;,
+ &#39;recalib_L1_phase_5&#39;,
+ &#39;recalib_L1_phase_6&#39;,
+ &#39;recalib_L1_phase_7&#39;,
+ &#39;recalib_L1_phase_8&#39;,
+ &#39;recalib_L1_phase_9&#39;,
+ &#39;theta_jn&#39;,
+ &#39;tilt_1&#39;,
+ &#39;tilt_2&#39;,
+ &#39;zenith&#39;}
+</pre></div>
+</div>
 </div>
 </div>
 </section>
@@ -1240,7 +1399,73 @@ LnBF: 303.45
 <div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>|<span class=" -Color -Color-Blue">funnel</span>|INFO| <span class=" -Color -Color-Green">Calculating FI LnZ with 10 reference points and a posterior of size: (147634, 55)</span> 
 </pre></div>
 </div>
-<script type="application/vnd.jupyter.widget-view+json">{"version_major": 2, "version_minor": 0, "model_id": "824811b67f314518be731a26ef2f2a01"}</script></div>
+<script type="application/vnd.jupyter.widget-view+json">{"version_major": 2, "version_minor": 0, "model_id": "00b0e8bd0a744381a1917c837083b3f6"}</script><div class="output traceback highlight-ipythontb notranslate"><div class="highlight"><pre><span></span><span class="gt">---------------------------------------------------------------------------</span>
+<span class="ne">KeyboardInterrupt</span><span class="g g-Whitespace">                         </span>Traceback (most recent call last)
+<span class="n">Cell</span> <span class="n">In</span><span class="p">[</span><span class="mi">6</span><span class="p">],</span> <span class="n">line</span> <span class="mi">9</span>
+<span class="g g-Whitespace">      </span><span class="mi">7</span> <span class="n">N_REF_POINTS</span> <span class="o">=</span> <span class="mi">10</span>
+<span class="g g-Whitespace">      </span><span class="mi">8</span> <span class="n">post</span> <span class="o">=</span> <span class="n">GW150914_data</span><span class="o">.</span><span class="n">posterior</span>
+<span class="ne">----&gt; </span><span class="mi">9</span> <span class="n">lnzs</span><span class="p">,</span> <span class="n">r_vals</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">get_fi_lnz_list</span><span class="p">(</span>
+<span class="g g-Whitespace">     </span><span class="mi">10</span>     <span class="n">post</span><span class="p">,</span>
+<span class="g g-Whitespace">     </span><span class="mi">11</span>     <span class="n">num_ref_params</span><span class="o">=</span><span class="n">N_REF_POINTS</span><span class="p">,</span>
+<span class="g g-Whitespace">     </span><span class="mi">12</span>     <span class="n">r_vals</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">geomspace</span><span class="p">(</span><span class="mi">50</span><span class="p">,</span> <span class="mf">1e5</span><span class="p">,</span> <span class="mi">100</span><span class="p">),</span>
+<span class="g g-Whitespace">     </span><span class="mi">13</span>     <span class="n">cache_fn</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">OUTDIR</span><span class="si">}</span><span class="s1">/lnzs.npz&#39;</span><span class="p">,</span>
+<span class="g g-Whitespace">     </span><span class="mi">14</span> <span class="p">)</span>
+
+<span class="nn">File ~/Documents/projects/funnel/src/funnel/fi_core.py:142,</span> in <span class="ni">get_fi_lnz_list</span><span class="nt">(posterior_samples, r_vals, num_ref_params, weight_samples_by_lnl, cache_fn)</span>
+<span class="g g-Whitespace">    </span><span class="mi">135</span> <span class="n">post_mask</span> <span class="o">=</span> <span class="n">get_post_mask</span><span class="p">(</span><span class="n">post</span><span class="p">,</span> <span class="n">refi</span><span class="p">)</span>
+<span class="g g-Whitespace">    </span><span class="mi">136</span> <span class="n">fi_kwargs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+<span class="g g-Whitespace">    </span><span class="mi">137</span>     <span class="n">posterior_samples</span><span class="o">=</span><span class="n">post</span><span class="p">[</span><span class="n">post_mask</span><span class="p">],</span>
+<span class="g g-Whitespace">    </span><span class="mi">138</span>     <span class="n">ref_samp</span><span class="o">=</span><span class="n">post</span><span class="p">[</span><span class="n">refi</span><span class="p">],</span>
+<span class="g g-Whitespace">    </span><span class="mi">139</span>     <span class="n">ref_lnpri</span><span class="o">=</span><span class="n">ln_pri</span><span class="p">[</span><span class="n">refi</span><span class="p">],</span>
+<span class="g g-Whitespace">    </span><span class="mi">140</span>     <span class="n">ref_lnl</span><span class="o">=</span><span class="n">ln_lnl</span><span class="p">[</span><span class="n">refi</span><span class="p">],</span>
+<span class="g g-Whitespace">    </span><span class="mi">141</span> <span class="p">)</span>
+<span class="ne">--&gt; </span><span class="mi">142</span> <span class="n">lnzs</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">fi_ln_evidence</span><span class="p">(</span><span class="o">**</span><span class="n">fi_kwargs</span><span class="p">,</span> <span class="n">r</span><span class="o">=</span><span class="n">ri</span><span class="p">)</span> <span class="k">for</span> <span class="n">ri</span> <span class="ow">in</span> <span class="n">r_vals</span><span class="p">])</span>
+<span class="g g-Whitespace">    </span><span class="mi">143</span> <span class="n">median_lnzs</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmedian</span><span class="p">(</span><span class="n">lnzs</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+<span class="g g-Whitespace">    </span><span class="mi">146</span> <span class="n">pbar</span><span class="o">.</span><span class="n">set_postfix_str</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;FI LnZ: </span><span class="si">{</span><span class="n">med_</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="nn">File ~/Documents/projects/funnel/src/funnel/fi_core.py:142,</span> in <span class="ni">&lt;listcomp&gt;</span><span class="nt">(.0)</span>
+<span class="g g-Whitespace">    </span><span class="mi">135</span> <span class="n">post_mask</span> <span class="o">=</span> <span class="n">get_post_mask</span><span class="p">(</span><span class="n">post</span><span class="p">,</span> <span class="n">refi</span><span class="p">)</span>
+<span class="g g-Whitespace">    </span><span class="mi">136</span> <span class="n">fi_kwargs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+<span class="g g-Whitespace">    </span><span class="mi">137</span>     <span class="n">posterior_samples</span><span class="o">=</span><span class="n">post</span><span class="p">[</span><span class="n">post_mask</span><span class="p">],</span>
+<span class="g g-Whitespace">    </span><span class="mi">138</span>     <span class="n">ref_samp</span><span class="o">=</span><span class="n">post</span><span class="p">[</span><span class="n">refi</span><span class="p">],</span>
+<span class="g g-Whitespace">    </span><span class="mi">139</span>     <span class="n">ref_lnpri</span><span class="o">=</span><span class="n">ln_pri</span><span class="p">[</span><span class="n">refi</span><span class="p">],</span>
+<span class="g g-Whitespace">    </span><span class="mi">140</span>     <span class="n">ref_lnl</span><span class="o">=</span><span class="n">ln_lnl</span><span class="p">[</span><span class="n">refi</span><span class="p">],</span>
+<span class="g g-Whitespace">    </span><span class="mi">141</span> <span class="p">)</span>
+<span class="ne">--&gt; </span><span class="mi">142</span> <span class="n">lnzs</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">fi_ln_evidence</span><span class="p">(</span><span class="o">**</span><span class="n">fi_kwargs</span><span class="p">,</span> <span class="n">r</span><span class="o">=</span><span class="n">ri</span><span class="p">)</span> <span class="k">for</span> <span class="n">ri</span> <span class="ow">in</span> <span class="n">r_vals</span><span class="p">])</span>
+<span class="g g-Whitespace">    </span><span class="mi">143</span> <span class="n">median_lnzs</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmedian</span><span class="p">(</span><span class="n">lnzs</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+<span class="g g-Whitespace">    </span><span class="mi">146</span> <span class="n">pbar</span><span class="o">.</span><span class="n">set_postfix_str</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;FI LnZ: </span><span class="si">{</span><span class="n">med_</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="nn">File ~/Documents/projects/funnel/src/funnel/fi_core.py:62,</span> in <span class="ni">fi_ln_evidence</span><span class="nt">(posterior_samples, ref_samp, r, ref_lnpri, ref_lnl)</span>
+<span class="g g-Whitespace">     </span><span class="mi">43</span> <span class="k">def</span> <span class="nf">fi_ln_evidence</span><span class="p">(</span>
+<span class="g g-Whitespace">     </span><span class="mi">44</span>     <span class="n">posterior_samples</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+<span class="g g-Whitespace">     </span><span class="mi">45</span>     <span class="n">ref_samp</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">,</span>
+   <span class="p">(</span><span class="o">...</span><span class="p">)</span>
+<span class="g g-Whitespace">     </span><span class="mi">48</span>     <span class="n">ref_lnl</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+<span class="g g-Whitespace">     </span><span class="mi">49</span> <span class="p">):</span>
+<span class="g g-Whitespace">     </span><span class="mi">50</span><span class="w">     </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="g g-Whitespace">     </span><span class="mi">51</span><span class="sd">     Returns the approx log-evidence of some posterior samples (using a reference parameter value).</span>
+<span class="g g-Whitespace">     </span><span class="mi">52</span><span class="sd">     The approximation is based on the &#39;density estimation&#39; method described in</span>
+<span class="sd">   (...)</span>
+<span class="g g-Whitespace">     </span><span class="mi">60</span><span class="sd">     :return: The log of the approximated log-evidence</span>
+<span class="g g-Whitespace">     </span><span class="mi">61</span><span class="sd">     &quot;&quot;&quot;</span>
+<span class="ne">---&gt; </span><span class="mi">62</span>     <span class="n">approx_ln_post</span> <span class="o">=</span> <span class="n">fi_ln_posterior</span><span class="p">(</span><span class="n">posterior_samples</span><span class="p">,</span> <span class="n">ref_samp</span><span class="p">,</span> <span class="n">r</span><span class="p">)</span>
+<span class="g g-Whitespace">     </span><span class="mi">63</span>     <span class="k">return</span> <span class="n">ref_lnpri</span> <span class="o">+</span> <span class="n">ref_lnl</span> <span class="o">-</span> <span class="n">approx_ln_post</span>
+
+<span class="nn">File ~/Documents/projects/funnel/src/funnel/fi_core.py:35,</span> in <span class="ni">fi_ln_posterior</span><span class="nt">(posterior_samples, reference_sample, r)</span>
+<span class="g g-Whitespace">     </span><span class="mi">29</span> <span class="c1"># patricio&#39;s suggestion</span>
+<span class="g g-Whitespace">     </span><span class="mi">30</span> <span class="c1"># different r for each parameter</span>
+<span class="g g-Whitespace">     </span><span class="mi">31</span> <span class="c1"># max_diff = np.nanmax(diff_from_ref, axis=0)</span>
+<span class="g g-Whitespace">     </span><span class="mi">32</span> <span class="c1"># r = np.pi/max_diff</span>
+<span class="g g-Whitespace">     </span><span class="mi">33</span> <span class="c1"># r is now a vector</span>
+<span class="g g-Whitespace">     </span><span class="mi">34</span> <span class="n">sin_diff</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">r</span> <span class="o">*</span> <span class="n">diff_from_ref</span><span class="p">)</span>
+<span class="ne">---&gt; </span><span class="mi">35</span> <span class="n">sum_res</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nansum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">nanprod</span><span class="p">(</span><span class="n">sin_diff</span> <span class="o">/</span> <span class="n">diff_from_ref</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
+<span class="g g-Whitespace">     </span><span class="mi">36</span> <span class="n">n_samp</span><span class="p">,</span> <span class="n">n_dim</span> <span class="o">=</span> <span class="n">posterior_samples</span><span class="o">.</span><span class="n">shape</span>
+<span class="g g-Whitespace">     </span><span class="mi">37</span> <span class="n">const</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="n">n_samp</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">power</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="n">n_dim</span><span class="p">))</span>
+
+<span class="ne">KeyboardInterrupt</span>: 
+</pre></div>
+</div>
+</div>
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">

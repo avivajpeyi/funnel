@@ -4,6 +4,7 @@ import os
 import numpy as np
 import pandas as pd
 from tqdm.auto import trange
+from typing import List, Tuple, Union
 
 from .logger import logger
 from .utils import get_post_mask
@@ -92,7 +93,7 @@ def get_fi_lnz_list(
     num_ref_params: int = 10,
     weight_samples_by_lnl: bool = False,
     cache_fn="",
-):
+)->Tuple[np.array, np.array, pd.DataFrame]:
     if os.path.exists(cache_fn):
         data = np.load(cache_fn)
         return data["lnzs"], data["r_vals"]

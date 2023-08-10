@@ -575,7 +575,7 @@ LnL- Noise LnL: 90.09
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython2 notranslate"><div class="highlight"><pre><span></span><span class="n">lnz_file</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">OUTDIR</span><span class="si">}</span><span class="s2">/lnz.npz&quot;</span>
-<span class="n">lnzs</span><span class="p">,</span> <span class="n">r_vals</span> <span class="o">=</span> <span class="n">get_fi_lnz_list</span><span class="p">(</span><span class="n">post</span><span class="p">,</span> <span class="n">num_ref_params</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">cache_fn</span><span class="o">=</span><span class="n">lnz_file</span><span class="p">)</span>
+<span class="n">lnzs</span><span class="p">,</span> <span class="n">r_vals</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">get_fi_lnz_list</span><span class="p">(</span><span class="n">post</span><span class="p">,</span> <span class="n">num_ref_params</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">cache_fn</span><span class="o">=</span><span class="n">lnz_file</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -839,7 +839,7 @@ LnBF: 56.96249503300896
 <span class="n">N_REF_POINTS</span> <span class="o">=</span> <span class="mi">100</span>
 <span class="n">post</span> <span class="o">=</span> <span class="n">CBC_data</span><span class="o">.</span><span class="n">posterior</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">N_SAMP</span><span class="p">,</span> <span class="n">weights</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">CBC_data</span><span class="o">.</span><span class="n">posterior</span><span class="o">.</span><span class="n">log_likelihood</span><span class="p">))</span>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Using </span><span class="si">{</span><span class="mi">100</span><span class="o">*</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">post</span><span class="p">)</span><span class="o">/</span><span class="nb">len</span><span class="p">(</span><span class="n">CBC_data</span><span class="o">.</span><span class="n">posterior</span><span class="p">))</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">% of posterior samples, and trying out </span><span class="si">{</span><span class="n">N_REF_POINTS</span><span class="si">}</span><span class="s2"> reference points.&quot;</span><span class="p">)</span>
-<span class="n">lnzs</span><span class="p">,</span> <span class="n">r_vals</span> <span class="o">=</span> <span class="n">get_fi_lnz_list</span><span class="p">(</span>
+<span class="n">lnzs</span><span class="p">,</span> <span class="n">r_vals</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">get_fi_lnz_list</span><span class="p">(</span>
     <span class="n">post</span><span class="p">,</span>
     <span class="n">num_ref_params</span><span class="o">=</span><span class="n">N_REF_POINTS</span><span class="p">,</span>
     <span class="n">r_vals</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">geomspace</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mf">1e9</span><span class="p">,</span> <span class="mi">100</span><span class="p">),</span>
@@ -894,7 +894,7 @@ LnBF: 56.96249503300896
 
 <span class="n">N_REF_POINTS</span> <span class="o">=</span> <span class="mi">100</span>
 <span class="n">post</span> <span class="o">=</span> <span class="n">CBC_data</span><span class="o">.</span><span class="n">posterior</span>
-<span class="n">lnzs</span><span class="p">,</span> <span class="n">r_vals</span> <span class="o">=</span> <span class="n">get_fi_lnz_list</span><span class="p">(</span>
+<span class="n">lnzs</span><span class="p">,</span> <span class="n">r_vals</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">get_fi_lnz_list</span><span class="p">(</span>
     <span class="n">post</span><span class="p">,</span>
     <span class="n">num_ref_params</span><span class="o">=</span><span class="n">N_REF_POINTS</span><span class="p">,</span>
     <span class="n">r_vals</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mf">1e5</span><span class="p">,</span> <span class="mf">2e5</span><span class="p">,</span> <span class="mi">100</span><span class="p">),</span>

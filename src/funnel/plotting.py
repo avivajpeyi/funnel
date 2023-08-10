@@ -3,6 +3,8 @@ import numpy as np
 import pandas as pd
 from matplotlib import rcParams
 
+import corner
+
 from .fi_core import get_fi_lnz_list, get_fi_lnz_no_r
 
 rcParams.update({"xtick.major.pad": "7.0"})
@@ -21,13 +23,13 @@ rcParams.update({"font.size": 20})
 
 
 def plot_fi_evidence_results(
-    posterior_samples: pd.DataFrame = pd.DataFrame,
-    sampling_lnz: np.array = [],
-    r_vals: np.array = np.array([]),
-    num_ref_params: int = 10,
-    plot_all_lnzs: bool = False,
-    plt_kwgs: dict = {},
-    lnzs=np.array([]),
+        posterior_samples: pd.DataFrame = pd.DataFrame,
+        sampling_lnz: np.array = [],
+        r_vals: np.array = np.array([]),
+        num_ref_params: int = 10,
+        plot_all_lnzs: bool = False,
+        plt_kwgs: dict = {},
+        lnzs=np.array([]),
 ):
     if len(lnzs) == 0:
         lnzs, r_vals, _ = get_fi_lnz_list(posterior_samples, r_vals, num_ref_params)
@@ -78,4 +80,21 @@ def plot_fi_evidence_results(
 
     ax.legend(loc=(1.1, 0.5), frameon=False)
     plt.tight_layout()
+    return fig
+
+
+def plot_corner_and_mark_samples(df, samps):
+    # assert df.columns == samps.columns, "Columns of df and samps must match"
+
+    fig = corner.corner(
+        df,
+        color="tab:gray",
+        truth=None, label_kwargs={"fontsize": 26}, quantiles=None,
+        plot_density=False, plot_contours=True, fill_contours=True,
+    )
+
+    # overplot the FI points
+    for i, s in enumerate(samps):
+        # corner.overplot_lines(fig, s, color=f'C{i}')
+        corner.overplot_points(fig, [[np.nan if t is None else t for t in s]], color=f'C{i}', marker='s', markersize=7)
     return fig

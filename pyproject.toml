@@ -30,7 +30,7 @@ jupyter = "^1.0.0"
 lalsuite = "^7.16"
 bilby = "^2.1.1"
 pytest = "^7.4.0"
-coverage = {extras = ["toml"], version = "^5.2"}
+coverage = {extras = ["toml"], version = "^7.3"}
 sphinx = "^3.1.2"
 sphinx-autobuild = "^0.7.1"
 pre-commit = "^2.6.0"

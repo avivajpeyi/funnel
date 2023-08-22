@@ -7,14 +7,7 @@ packages = ["funnel"]
 
 package_data = {"": ["*"]}
 
-install_requires = [
-    "click>=7.0,<8.0",
-    "loguru>=0.7.0,<0.8.0",
-    "matplotlib>=3.7.2,<4.0.0",
-    "numpy>=1.25.1,<2.0.0",
-    "pytest>=7.4.0,<8.0.0",
-    "tqdm>=4.65.0,<5.0.0",
-]
+install_requires = ["loguru", "matplotlib", "numpy", "pytest", "tqdm", "numba"]
 
 entry_points = {"console_scripts": ["funnel = funnel.__main__:main"]}
 

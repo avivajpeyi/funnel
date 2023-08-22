@@ -4,37 +4,14 @@ import os
 import numpy as np
 import pandas as pd
 from tqdm.auto import trange
-from typing import List, Tuple, Union
+from typing import Tuple
 
 from .logger import logger
 from .utils import get_post_mask
+import numba
 
 
-def fi_ln_posterior(
-    posterior_samples: np.ndarray, reference_sample: np.array, r: float
-):
-    """
-    Returns the approx posterior probability at the reference parameter value.
-    The approximation is based on the 'density estimation' method described in
-    [Rotiroti et al., 2018](https://link.springer.com/article/10.1007/s11222-022-10131-0).
-
-    :param posterior_samples:np.ndarray: Array of posterior samples [n_samples, n_dim]
-    :param reference_sample:np.array: A reference parameter value [n_dim] (Not present in the posterior)
-    :param r:float: A scaling factor
-    :return: The log of the approximated posterior
-    """
-
-    diff_from_ref = posterior_samples - reference_sample
-    sin_diff = np.sin(r * diff_from_ref)
-    prod_res = np.nanprod(sin_diff / diff_from_ref, axis=1)
-    sum_res = np.abs(np.nansum(prod_res))
-    n_samp, n_dim = posterior_samples.shape
-    const = 1 / (n_samp * np.power(np.pi, n_dim))
-    if sum_res < 0:
-        return np.nan
-    return np.log(sum_res * const)
-
-
+@numba.jit(parallel=True)
 def fi_ln_evidence(
     posterior_samples: np.ndarray,
     ref_samp: np.array,
@@ -54,7 +31,17 @@ def fi_ln_evidence(
     :param ref_lnl:float: The log of the reference likelihood
     :return: The log of the approximated log-evidence
     """
-    approx_ln_post = fi_ln_posterior(posterior_samples, ref_samp, r)
+    # approximating the normalised posterior probability at reference sample
+    diff_from_ref = posterior_samples - ref_samp
+    sin_diff = np.sin(r * diff_from_ref)
+    integrand = sin_diff / diff_from_ref
+    # integrand = norm.pdf(posterior_samples, loc=reference_sample, scale=4*r)
+    prod_res = np.nanprod(integrand, axis=1)
+    sum_res = np.abs(np.nansum(prod_res))
+    n_samp, n_dim = posterior_samples.shape
+    const = 1 / (n_samp * np.power(np.pi, n_dim))
+    approx_ln_post = np.log(sum_res * const)
+    # using bayes theorem to get the approximated log-evidence
     return ref_lnpri + ref_lnl - approx_ln_post
 
 

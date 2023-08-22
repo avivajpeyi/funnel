@@ -72,7 +72,7 @@ def bilby_result(tmp_path):
         likelihood=likelihood,
         priors=priors,
         sampler="dynesty",
-        nlive=200,
+        nlive=2000,
         outdir=outdir,
         label=label,
         injection_parameters=injection_parameters,
@@ -97,6 +97,7 @@ def test_fi_integration_plot(bilby_result, tmp_path):
     #     posterior_samples=bilby_result.posterior,
     #     ref_samp=bilby_result.posterior.median(),
     # )
+    label = "test"
     fig = plot_fi_evidence_results(
         posterior_samples=bilby_result.posterior,
         sampling_lnz=[lnz - lnzerr, lnz + lnzerr],

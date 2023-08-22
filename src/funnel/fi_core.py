@@ -25,14 +25,9 @@ def fi_ln_posterior(
     """
 
     diff_from_ref = posterior_samples - reference_sample
-
-    # patricio's suggestion
-    # different r for each parameter
-    # max_diff = np.nanmax(diff_from_ref, axis=0)
-    # r = np.pi/max_diff
-    # r is now a vector
     sin_diff = np.sin(r * diff_from_ref)
-    sum_res = np.nansum(np.nanprod(sin_diff / diff_from_ref, axis=1))
+    prod_res = np.nanprod(sin_diff / diff_from_ref, axis=1)
+    sum_res = np.abs(np.nansum(prod_res))
     n_samp, n_dim = posterior_samples.shape
     const = 1 / (n_samp * np.power(np.pi, n_dim))
     if sum_res < 0:
@@ -63,40 +58,16 @@ def fi_ln_evidence(
     return ref_lnpri + ref_lnl - approx_ln_post
 
 
-def get_fi_lnz_no_r(
-    posterior_samples: np.ndarray,
-    ref_samp: np.array,
-    ref_lnpri: float,
-    ref_lnl: float,
-):
-    diff_from_ref = posterior_samples - ref_samp
-
-    # patricio's suggestion
-    # different r for each parameter
-    max_diff = np.nanmax(diff_from_ref, axis=0)
-    r = np.pi / max_diff
-    # r is now a vector
-
-    sin_diff = np.sin(r * diff_from_ref)
-    sum_res = np.nansum(np.nanprod(sin_diff / diff_from_ref, axis=1))
-    n_samp, n_dim = posterior_samples.shape
-    const = 1 / (n_samp * np.power(np.pi, n_dim))
-    if sum_res < 0:
-        return np.nan
-    approx_ln_post = np.log(sum_res * const)
-    return ref_lnpri + ref_lnl - approx_ln_post
-
-
 def get_fi_lnz_list(
     posterior_samples: pd.DataFrame,
     r_vals: np.array = [],
     num_ref_params: int = 10,
     weight_samples_by_lnl: bool = False,
     cache_fn="",
-)->Tuple[np.array, np.array, pd.DataFrame]:
+) -> Tuple[np.array, np.array, pd.DataFrame]:
     if os.path.exists(cache_fn):
         data = np.load(cache_fn)
-        return data["lnzs"], data["r_vals"]
+        return data["lnzs"], data["r_vals"], data["samp"]
 
     if len(r_vals) == 0:
         r_vals = np.geomspace(1e-3, 1e10, 2000)
@@ -113,8 +84,10 @@ def get_fi_lnz_list(
 
     logger.info(
         f"Calculating FI LnZ with {num_ref_params} reference points "
-        f"and a posterior of size: {post.shape}"
+        f"and a posterior of size:{post.shape}"
     )
+    param_str = "\n".join(sorted(posterior_samples.columns.values))
+    logger.info(f"Posterior columns:\n{param_str}")
 
     # randomly select reference points
     ref_idx = np.random.choice(len(post), num_ref_params, replace=False)
@@ -141,7 +114,6 @@ def get_fi_lnz_list(
             )
             lnzs[i] = np.array([fi_ln_evidence(**fi_kwargs, r=ri) for ri in r_vals])
             median_lnzs[i] = np.nanmedian(lnzs[i])
-
 
             pbar.set_postfix_str(f"FI LnZ: {med_:.2f}")
             pbar.update()

@@ -3,4 +3,4 @@ root: index
 chapters:
   - file: examples/linear_regression
   - file: examples/lvk_injection
-  - file: examples/lvk
+  - file: examples/GW150914

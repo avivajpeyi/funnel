@@ -8,7 +8,6 @@ import numpy as np
 import pytest
 
 from funnel.plotting import plot_fi_evidence_results
-from funnel.fi_core import get_fi_lnz_no_r
 
 CLEAN = False
 
@@ -17,16 +16,27 @@ np.random.seed(42)
 NLIVE = 200
 
 
-@pytest.fixture(scope="module")
-def bilby_result():
+@pytest.fixture()
+def tmp_path():
+    """Return the path to the temporary directory."""
+    return os.path.join(os.path.dirname(os.path.abspath(__file__)), "out")
+
+
+@pytest.fixture()
+def bilby_result(tmp_path):
     """Create a bilby result object with a Gaussian likelihood."""
 
     def model(time, m, c):
         return time * m + c
 
-    outdir, label = "out", "line"
+    outdir, label = tmp_path, "line"
     if os.path.exists(outdir) and CLEAN:
         shutil.rmtree(outdir)
+
+    res_fn = os.path.join(outdir, f"{label}_result.json")
+    if os.path.exists(res_fn):
+        return bilby.result.read_in_result(res_fn)
+
     os.makedirs(outdir, exist_ok=True)
 
     # Now we define the injection parameters which we make simulated data with
@@ -90,6 +100,8 @@ def test_fi_integration_plot(bilby_result, tmp_path):
     fig = plot_fi_evidence_results(
         posterior_samples=bilby_result.posterior,
         sampling_lnz=[lnz - lnzerr, lnz + lnzerr],
-        r_vals=[10, 100, 1000],
+        num_ref_params=10,
+        r_vals=np.geomspace(10, 1e5, 3),
     )
-    fig.savefig(tmp_path / "fi_evidence.png")
+    fig.suptitle(label)
+    fig.savefig(f"{tmp_path}/fi_evidence.png")

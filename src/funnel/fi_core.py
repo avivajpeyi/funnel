@@ -8,10 +8,11 @@ from typing import Tuple
 
 from .logger import logger
 from .utils import get_post_mask
-import numba
+# import numba
+#
+#
+# @numba.jit(parallel=True)
 
-
-@numba.jit(parallel=True)
 def fi_ln_evidence(
     posterior_samples: np.ndarray,
     ref_samp: np.array,
@@ -81,7 +82,9 @@ def get_fi_lnz_list(
     if weight_samples_by_lnl:
         p = np.exp(ln_lnl - np.nanmax(ln_lnl))
         p /= np.nansum(p)
-        ref_idx = np.random.choice(len(post), num_ref_params, replace=False, p=p)
+        # ref_idx = np.random.choice(len(post), num_ref_params, replace=False, p=p)
+        # get the reference points with the highest likelihoods
+        ref_idx = np.argsort(ln_lnl)[-num_ref_params:]
 
     lnzs = np.zeros((num_ref_params, len(r_vals)))
     median_lnzs = np.zeros(num_ref_params)

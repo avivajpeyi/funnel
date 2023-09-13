@@ -36,7 +36,6 @@ def fi_ln_evidence(
     diff_from_ref = posterior_samples - ref_samp
     sin_diff = np.sin(r * diff_from_ref)
     integrand = sin_diff / diff_from_ref
-    # integrand = norm.pdf(posterior_samples, loc=reference_sample, scale=4*r)
     prod_res = np.nanprod(integrand, axis=1)
     sum_res = np.abs(np.nansum(prod_res))
     n_samp, n_dim = posterior_samples.shape

@@ -6,7 +6,6 @@
 #SBATCH --time=00:10:00
 #SBATCH --mem=1GB
 #SBATCH --cpus-per-task=1
-#SBATCH --partition=sstar
 #SBATCH --array=0-5
 
 module load python-scientific/3.10.4-foss-2022a

@@ -1,7 +1,7 @@
 Funnel (FoUrier iNtegratioN Evidence calcuLation)
 =================================================
 
-|PyPI| |Python Version|
+ |Python Version|
 
 |Tests| |Codecov|
 

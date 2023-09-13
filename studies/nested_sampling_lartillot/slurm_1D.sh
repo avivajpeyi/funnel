@@ -13,5 +13,5 @@ source /fred/oz980/avajpeyi/envs/milan_venv/bin/activate
 
 ARRAY_ARGS=(0 1 2 3 4)
 
-python run_lartillot.py -d 1 -s ${ARRAY_ARGS[${SLURM_ARRAY_TASK_ID}]}
+python run_lartillot.py -d 1
 

@@ -55,7 +55,7 @@ def true_lnz(v, dim):
 
 
 @suppress_output
-def nested_sampling_lnz(v, dim):
+def nested_sampling_lnz(v, dim, label=""):
     likelihood = LartillotLikelihood(dim, v)
     priors = get_prior(dim)
     result = bilby.run_sampler(
@@ -63,7 +63,7 @@ def nested_sampling_lnz(v, dim):
         priors=priors,
         sampler="dynesty",
         nlive=1000,
-        label=f"lartillot_dynesty_d{dim}_v{v}",
+        label=f"lartillot_dynesty_d{dim}_v{v}_{label}",
         clean=True,
         sample="rwalk",
         save=False,
@@ -114,7 +114,7 @@ def fi_lnz(v, dim, nsamp=1000):
         weight_samples_by_lnl=True,
     )
     # only keep last 90% of lnzs
-    lnzs = lnzs[:, -int(0.9 * nsamp):]
+    lnzs = lnzs[:, -int(0.9 * nsamp) :]
     return np.median(lnzs), np.std(lnzs)
 
 
@@ -137,8 +137,9 @@ def __runner(args, outfile, checkpoint_n_sec=3 * 3):
     t0 = time.time()
     data = []
     pbar = trange(args.nrep)
-    for _ in pbar:
-        data.append(nested_sampling_lnz(args.v, args.dim))
+    for i in pbar:
+        l = f"_seed{args.seed}_rep{i}"
+        data.append(nested_sampling_lnz(args.v, args.dim, l))
         pbar.set_postfix_str(f"LnZ: {data[-1][0]:.2f} +/- {data[-1][1]:.2f}")
         t1 = time.time()
         if t1 - t0 > checkpoint_n_sec:

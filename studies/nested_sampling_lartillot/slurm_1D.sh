@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-#SBATCH --job-name=lartillot_1d
+#SBATCH --job-name=lartillot_1d_%A_%a
 #SBATCH --output=logs/lartillot_1d_%A_%a.log
 #SBATCH --ntasks=1
 #SBATCH --time=00:10:00

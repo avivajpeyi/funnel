@@ -7,13 +7,23 @@ from tqdm.auto import tqdm, trange
 from contextlib import redirect_stdout
 import io
 import os
+import time
 
 import logging
 
 logging.getLogger("bilby").setLevel(logging.ERROR)
 
-
 OUTDIR = "out"
+
+
+def suppress_output(func):
+    def wrapper(*args, **kwargs):
+        f = io.StringIO()
+        with redirect_stdout(f):  # suppress output
+            out = func(*args, **kwargs)
+        return out
+
+    return wrapper
 
 
 class LartillotLikelihood(bilby.Likelihood):
@@ -44,6 +54,7 @@ def true_lnz(v, dim):
     return (dim / 2) * (np.log(v) - np.log(1 + v))
 
 
+@suppress_output
 def nested_sampling_lnz(v, dim):
     likelihood = LartillotLikelihood(dim, v)
     priors = get_prior(dim)
@@ -53,8 +64,9 @@ def nested_sampling_lnz(v, dim):
         sampler="dynesty",
         nlive=1000,
         label=f"lartillot_dynesty_d{dim}_v{v}",
-        clean=False,
+        clean=True,
         sample="rwalk",
+        save=False,
     )
     return (result.log_evidence, result.log_evidence_err)
 
@@ -102,13 +114,11 @@ def fi_lnz(v, dim, nsamp=1000):
         weight_samples_by_lnl=True,
     )
     # only keep last 90% of lnzs
-    lnzs = lnzs[:, -int(0.9 * nsamp) :]
+    lnzs = lnzs[:, -int(0.9 * nsamp):]
     return np.median(lnzs), np.std(lnzs)
 
 
-# make a main function that runs the nested_sampling_lnz given a v and dim from the command line
-# save the LnZ to a file
-def main():
+def parse_cli_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("-v", "--v", type=float, default=0.01)
     parser.add_argument("-d", "--dim", type=int, default=1)
@@ -118,19 +128,39 @@ def main():
     if args.seed < 0:
         args.seed = np.random.randint(0, 1e5)
         np.random.seed(args.seed)
+    return args
 
-    print("Lartillot LnZ (v={args.v}, dim={args.dim}, seed={args.seed})")
+
+def __runner(args, outfile, checkpoint_n_sec=3 * 3):
+    with open(outfile, "a") as f:
+        f.write(f"lnz lnz_err\n")
+    t0 = time.time()
+    data = []
+    pbar = trange(args.nrep)
+    for _ in pbar:
+        data.append(nested_sampling_lnz(args.v, args.dim))
+        pbar.set_postfix_str(f"LnZ: {data[-1][0]:.2f} +/- {data[-1][1]:.2f}")
+        t1 = time.time()
+        if t1 - t0 > checkpoint_n_sec:
+            t0 = t1
+            __checkpoint_data(data, outfile)
+            data = []
+    __checkpoint_data(data, outfile)
+
+
+def __checkpoint_data(data, outfile):
+    with open(outfile, "a") as f:
+        for lnz, lnz_err in data:
+            f.write(f"{lnz} {lnz_err}\n")
+
+
+def main():
+    args = parse_cli_args()
+    print(f"Lartillot LnZ (v={args.v}, dim={args.dim}, seed={args.seed})")
     print(f"True LnZ: {true_lnz(args.v, args.dim):.2f}")
     os.makedirs(OUTDIR, exist_ok=True)
     outfile = f"{OUTDIR}/lartillot_d{args.dim}_v{args.v}_seed{args.seed}.dat"
-    pbar = tqdm(total=args.nrep)
-    for _ in pbar:
-        f = io.StringIO()
-        with redirect_stdout(f):  # suppress output
-            lnz, lnz_err = nested_sampling_lnz(args.v, args.dim)
-        with open(outfile, "a") as f:
-            f.write(f"{lnz} {lnz_err}\n")
-        pbar.set_postfix_str(f"LnZ: {lnz:.2f} +/- {lnz_err:.2f}")
+    __runner(args, outfile)
 
 
 if __name__ == "__main__":

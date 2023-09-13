@@ -6,10 +6,14 @@ import argparse
 from tqdm.auto import tqdm, trange
 from contextlib import redirect_stdout
 import io
+import os
 
 import logging
 
 logging.getLogger("bilby").setLevel(logging.ERROR)
+
+
+OUTDIR = "out"
 
 
 class LartillotLikelihood(bilby.Likelihood):
@@ -117,7 +121,8 @@ def main():
 
     print("Lartillot LnZ (v={args.v}, dim={args.dim}, seed={args.seed})")
     print(f"True LnZ: {true_lnz(args.v, args.dim):.2f}")
-    outfile = f"lartillot_d{args.dim}_v{args.v}_seed{args.seed}.dat"
+    os.makedirs(OUTDIR, exist_ok=True)
+    outfile = f"{OUTDIR}/lartillot_d{args.dim}_v{args.v}_seed{args.seed}.dat"
     pbar = tqdm(total=args.nrep)
     for _ in pbar:
         f = io.StringIO()

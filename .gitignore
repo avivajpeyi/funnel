@@ -18,3 +18,12 @@ out*
 *.coverage.*
 .idea
 *.h5
+studies/Rscripts/complete LISA PH/fp_for_Jason\
+*.csv
+*.zip
+*.txt
+*.nc
+Chains
+*.RData
+*.dta
+*.Rhistory

@@ -1,15 +1,16 @@
-import bilby
-from funnel.fi_core import get_fi_lnz_list
-import numpy as np
-import pandas as pd
 import argparse
-from tqdm.auto import trange
-from contextlib import redirect_stdout
 import io
+import logging
 import os
 import time
+from contextlib import redirect_stdout
 
-import logging
+import bilby
+import numpy as np
+import pandas as pd
+from tqdm.auto import trange
+
+from funnel.fi_core import get_fi_lnz_list
 
 logging.getLogger("bilby").setLevel(logging.ERROR)
 
@@ -44,21 +45,23 @@ def true_lnz(v, dim):
     return (dim / 2) * (np.log(v) - np.log(1 + v))
 
 
-def nested_sampling_lnz(v, dim, label="", nlive=1000):
+def nested_sampling_lnz(v, dim, label="", nlive=1000, checkpoint=False):
     likelihood = LartillotLikelihood(dim, v)
     priors = get_prior(dim)
+    clean = not checkpoint
     result = bilby.run_sampler(
         likelihood=likelihood,
         priors=priors,
         sampler="dynesty",
         nlive=nlive,
         label=f"d{dim}_v{v}_nlive{nlive}_{label}",
-        clean=True,
+        clean=clean ,
         sample="rwalk",
         save=False,
         plot=False,
         print_method="interval-10",
-        check_point=False,
+        check_point=checkpoint,
+        check_point_plot=False,
     )
     return (result.log_evidence, result.log_evidence_err)
 
@@ -70,6 +73,7 @@ def parse_cli_args():
     parser.add_argument("-r", "--nrep", type=int, default=50)
     parser.add_argument("-s", "--seed", type=int, default=-1)
     parser.add_argument("-n", "--nlive", type=int, default=1000)
+    parser.add_argument('-c', '--checkpoint', action='store_true', default=False)
     args = parser.parse_args()
     if args.seed < 0:
         args.seed = np.random.randint(0, 1e5)
@@ -77,15 +81,15 @@ def parse_cli_args():
     return args
 
 
-def __runner(args, outfile, checkpoint_n_sec=3 * 3):
+def __runner(args, outfile, checkpoint_n_sec=3 * 60):
     with open(outfile, "a") as f:
         f.write(f"lnz lnz_err\n")
     t0 = time.time()
     data = []
     pbar = trange(args.nrep)
     for i in pbar:
-        l = f"_seed{args.seed}_rep{i}"
-        data.append(nested_sampling_lnz(args.v, args.dim, l, nlive=args.nlive))
+        l = f"_seed{args.seed}"
+        data.append(nested_sampling_lnz(args.v, args.dim, l, nlive=args.nlive, checkpoint=args.checkpoint))
         pbar.set_postfix_str(f"LnZ: {data[-1][0]:.2f} +/- {data[-1][1]:.2f}")
         t1 = time.time()
         if t1 - t0 > checkpoint_n_sec:

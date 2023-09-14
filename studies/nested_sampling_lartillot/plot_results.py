@@ -1,38 +1,51 @@
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+from matplotlib.ticker import MaxNLocator
+# ticklocator
+
+# plt rc params y ticks mirrored
+plt.rcParams["ytick.direction"] = "in"
+plt.rcParams["ytick.major.size"] = 5
+plt.rcParams["ytick.right"] = True
+plt.rcParams["font.size"] = 15
+
+DATA = "out/nested_sampling_lnzs.dat"
+V = 0.01
 
 
-# set fontsize to 20 for everything in rcPara
-plt.rcParams.update({"font.size": 20})
-
-nlive50_dat = np.loadtxt("lartillot_d1_v0.01_nlive50.dat", skiprows=1)
-nlive1000_dat = np.loadtxt("lartillot_d1_v0.01_nlive1000.dat", skiprows=1)
+def true_lnz(v, dim):
+    return (dim / 2) * (np.log(v) - np.log(1 + v))
 
 
-bins = np.linspace(-2.6, -2, 10)
-
-fig, ax = plt.subplots(2, 1, figsize=(5, 8))
-ax[0].hist(nlive50_dat[:, 0], bins=bins, alpha=0.5, label="nlive=50", density=True)
-ax[0].hist(nlive1000_dat[:, 0], bins=bins, alpha=0.5, label="nlive=1000", density=True)
-ax[0].legend()
-ax[0].set_xlabel("logZ")
-ax[0].set_ylabel("p(logZ)")
-
-# plot runtimes on y, label on x
-runtimes = dict(
-    nlive50=((2 * 60 + 20) / 50, np.std((2 * 60 + 20) / 50) / np.sqrt(50)),
-    nlive1000=((9 * 60 + 46) / 23, np.std((9 * 60 + 46) / 23) / np.sqrt(23)),
-)
-
-ax[1].errorbar(
-    [0, 1],
-    [runtimes["nlive50"][0], runtimes["nlive1000"][0]],
-    yerr=[1, 6],
-    fmt="o",
-)
-ax[1].set_ylabel("runtime [s]")
-ax[1].set_xticks([0, 1], ["nlive=50", "nlive=1000"])
+def read_data():
+    data = np.loadtxt(DATA, skiprows=1)
+    data = pd.DataFrame(data, columns=["dim", "ns_lnz", "ns_lnz_err"])
+    return data
 
 
-plt.tight_layout()
-plt.show()
+def violin_plot_of_lnzs_for_each_d():
+    data = read_data()
+    # different panel for each dimension
+    fig, ax = plt.subplots(1, 3, figsize=(8, 5))
+    for i, d in enumerate([1, 20, 100]):
+        ax[i].violinplot(
+            data[data["dim"] == d]["ns_lnz"],
+            quantiles=[0.16, 0.5, 0.84],
+            showextrema=False,
+        )
+        # draw ornage line at true ln(Z)
+        ax[i].axhline(true_lnz(V, d), color="orange", ls="--", lw=1)
+        ax[i].set_xticks([])
+        # ax[i].set_xticks([1])
+        if i == 0:
+            ax[i].set_ylabel("ln(Z)")
+        ax[i].set_title(f"d={d}")
+        # only use 3 y ticks
+        ax[i].yaxis.set_major_locator(MaxNLocator(4))
+    fig.tight_layout()
+    fig.savefig("out/nested_sampling_lnzs.png", bbox_inches="tight")
+
+
+if __name__ == '__main__':
+    violin_plot_of_lnzs_for_each_d()

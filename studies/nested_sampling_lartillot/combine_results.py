@@ -1,4 +1,5 @@
 import glob
+
 import numpy as np
 
 OUTDIR = "out"
@@ -8,6 +9,9 @@ def get_combined_data(files):
     """Combine files into a single file"""
     data = []
     for f in files:
+        # if file just has 1 line, skip it
+        if sum(1 for line in open(f)) == 1:
+            continue
         data.append(np.loadtxt(f, skiprows=1))
     if len(data) == 0:
         return np.array([])
